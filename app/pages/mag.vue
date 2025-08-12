@@ -4,6 +4,7 @@ const supabase = useSupabaseClient();
 const loading = ref(false);
 const email = ref("");
 
+// Sends a passwordless magic link to the provided email
 const handleLogin = async () => {
     try {
         loading.value = true;

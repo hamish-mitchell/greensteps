@@ -1,21 +1,24 @@
 <script setup>
+// Supabase client + current user composables supplied by @nuxtjs/supabase
 const supabase = useSupabaseClient();
+const user = useSupabaseUser(); // reactive user object (null if signed out)
 
+// Reactive form state
 const loading = ref(true);
 const username = ref("");
 const website = ref("");
 const avatar_path = ref("");
 
+// Initial profile fetch
 loading.value = true;
-const user = useSupabaseUser();
-
 const { data } = await supabase
     .from("profiles")
     .select(`username, website, avatar_url`)
-    .eq("id", user.value.id)
+    .eq("id", user.value.id) // filter by authenticated user id
     .single();
 
 if (data) {
+    // Populate local form fields
     username.value = data.username;
     website.value = data.website;
     avatar_path.value = data.avatar_url;
@@ -24,20 +27,21 @@ if (data) {
 loading.value = false;
 
 async function updateProfile() {
+    // Upsert merges (insert if not exists, update if exists)
     try {
         loading.value = true;
-        const user = useSupabaseUser();
+        const user = useSupabaseUser(); // re-grab in case of reactivity changes
 
         const updates = {
-            id: user.value.id,
+            id: user.value.id,          // row primary key
             username: username.value,
             website: website.value,
             avatar_url: avatar_path.value,
-            updated_at: new Date(),
+            updated_at: new Date(),     // server-side could also set this
         };
 
         const { error } = await supabase.from("profiles").upsert(updates, {
-            returning: "minimal", // Don't return the value after inserting
+            returning: "minimal", // reduces payload
         });
         if (error) throw error;
     } catch (error) {
@@ -48,6 +52,7 @@ async function updateProfile() {
 }
 
 async function signOut() {
+    // Clears session; useSupabaseUser() ref becomes null
     try {
         loading.value = true;
         const { error } = await supabase.auth.signOut();
@@ -62,6 +67,8 @@ async function signOut() {
 </script>
 
 <template>
+    <!-- Simple profile edit form bound to reactive refs -->
+    <!-- Email is read-only from auth metadata -->
     <form class="form-widget" @submit.prevent="updateProfile">
         <div>
             <label for="email">Email</label>
