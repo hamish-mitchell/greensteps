@@ -28,18 +28,19 @@
 import { ref } from "vue";
 
 const supabase = useSupabaseClient();
-const user = useSupabaseUser();
+const user = useSupabaseUser(); // reactive; updates on auth state changes
+
+// Form state
 const email = ref("");
 const password = ref("");
 const error = ref("");
 
+// Email/password sign-in
 async function signIn() {
-    //this is infact the signin function
     try {
         error.value = "";
         const { _data, error: signInError } =
             await supabase.auth.signInWithPassword({
-                //I'm in
                 email: email.value,
                 password: password.value,
             });
@@ -47,12 +48,14 @@ async function signIn() {
             error.value = signInError.message;
             console.error("Sign in error:", signInError);
         }
+        // _data contains session info if successful
     } catch (e) {
         console.error("Unexpected error:", e);
         error.value = "An unexpected error occurred";
     }
 }
 
+// Sign out current session
 async function signOut() {
     try {
         const { error: signOutError } = await supabase.auth.signOut();

@@ -1,3 +1,10 @@
 # Greensteps
 
 ooh look the steps are very green
+
+<!--
+Project notes:
+- Auth pages: /login (password), /signup (registration), /mag (magic link), /account (profile).
+- Uses @nuxtjs/supabase; env vars SUPABASE_URL & SUPABASE_ANON_KEY must be set.
+- Tailwind (via Vite plugin) + custom CSS in app/assets/css/tailwind.css.
+-->
