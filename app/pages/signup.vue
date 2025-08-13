@@ -2,20 +2,20 @@
 <template>
     <!-- Collect email/password + display name (stored in user metadata) -->
     <form @submit.prevent="signUp">
-        <input v-model="email" type="email" placeholder="Email" required />
+        <input v-model="email" type="email" placeholder="Email" required >
         <input
             v-model="password"
             type="password"
             placeholder="Password"
             required
-        />
+        >
         <input
             v-model="displayName"
             type="text"
             placeholder="Display Name"
             required
-        />
-        <button type="submit">Sign Up</button>
+        >
+        <button type="submit" class="p-2 bg-blue-300">Sign Up</button>
         <p v-if="error" style="color: red">{{ error }}</p>
         <p v-if="success" style="color: green"
             >Signup successful! Check your email.</p

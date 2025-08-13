@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from "vue";
 
+const supabase = useSupabaseClient();
+        
+
 const data = ref(null);
 const electricityUsage = ref(0);
 const foodAmount = ref(0);
@@ -43,10 +46,16 @@ const fetchData = async () => {
                 source: "coal",
                 amount: electricityUsage.value,
             };
+            await supabase
+            .from('activities')
+            .insert({
+                'type': 'electricity',
+                amount: electricityUsage.value
+            })
         } else if (activityType.value === "food") {
             if (selectedFoodType.value === "other") {
                 data.value = {
-                    error: "bruh",
+                    error: `eat something on the list`,
                 };
                 return;
             } else {
@@ -69,6 +78,8 @@ const fetchData = async () => {
         loading.value = false;
     }
 };
+
+
 </script>
 
 <template>
@@ -145,7 +156,7 @@ const fetchData = async () => {
                     {{ food.name }}
                 </option>
             </select>
-            <p class="mb-2 font-semibold">kilogram</p>
+            <p class="mb-2 font-semibold">how much kilogam</p>
             <input
                 v-model="foodAmount"
                 type="number"
@@ -166,9 +177,9 @@ const fetchData = async () => {
         </div>
         <div v-else-if="data" class="bg-gray-50 rounded p-4 mt-4">
             <h2 class="text-xl font-bold mb-2">Emissions Data</h2>
-            <pre class="bg-gray-100 rounded p-2 text-sm overflow-x-auto">{{
+            <div class="bg-gray-100 rounded p-2 text-sm overflow-x-auto">{{
                 JSON.stringify(data, null, 2)
-            }}</pre>
+            }}</div>
         </div>
     </div>
 </template>

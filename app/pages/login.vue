@@ -14,7 +14,7 @@
                     placeholder="Password"
                     class="input"
                 />
-                <button class="btn" @click="signIn">Sign In</button>
+                <button class="btn p-2 bg-blue-500 hover:bg-blue-700 border border-blue-100" @click="signIn">Sign In</button>
                 <p v-if="error" class="text-red-500">{{ error }}</p>
             </div>
             <NuxtLink to="/signup" class="text-blue-500 mt-4"
@@ -67,45 +67,3 @@ async function signOut() {
     }
 }
 </script>
-
-<style scoped>
-.center-container {
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.login-box {
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.441);
-    background: rgb(0, 0, 0);
-    width: 100%;
-    max-width: 400px;
-}
-
-.input {
-    margin: 4px;
-    padding: 8px;
-    width: 100%;
-    border: 1px solid #000000;
-    border-radius: 4px;
-}
-
-.btn {
-    margin: 8px;
-    padding: 8px 16px;
-    background: #000000;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    width: 100%;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.btn:hover {
-    background: #828282;
-}
-</style>

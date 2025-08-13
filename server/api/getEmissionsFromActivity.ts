@@ -31,7 +31,7 @@ function getElectricityEmissions(
     kilowattHours: number
 ): { emissions: number | null; message?: string } {
     if (kilowattHours > 10000) {
-        return { emissions: null, message: "Amount exceeds limit" };
+        return { emissions: null, message: "too much elecricity" };
     }
 
     let emissions: number | null = null;
@@ -74,7 +74,7 @@ function getFoodEmissions(
     kilograms: number
 ): { emissions: number | null; message?: string } {
     if (kilograms > 1000) {
-        return { emissions: null, message: "Amount exceeds limit" };
+        return { emissions: null, message: "too much food" };
     }
 
     let emissions: number | null = null;
