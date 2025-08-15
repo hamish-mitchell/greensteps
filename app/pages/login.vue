@@ -1,12 +1,67 @@
 <script setup lang="ts">
-import { ref } from "vue"
+// Component imports
 import SignupForm from "~/components/SignupForm.vue"
 import SigninForm from "~/components/SigninForm.vue"
 
-const showSignup = ref(true)
+// Switch between signup and signin forms
+const showSignup = ref(false)
+
+// Form state
+const signupDisplayName = ref("")
+const signupEmail = ref("")
+const signupPassword = ref("")
+const signinEmail = ref("")
+const signinPassword = ref("")
+
+// Loading and error state
+const loading = ref(false)
+const error = ref<string | null>(null)
+
+// Supabase
+const supabase = useSupabaseClient()
+const router = useRouter()
 
 function handleSwitchForm(form: "signup" | "signin") {
   showSignup.value = form === "signup"
+  error.value = null
+  loading.value = false
+}
+
+async function handleSignup() {
+  error.value = null
+  loading.value = true
+  // Sign up
+  const { error: signupError } = await supabase.auth.signUp({
+    email: signupEmail.value,
+    password: signupPassword.value,
+    options: {
+      data: {
+        display_name: signupDisplayName.value,
+      },
+    },
+  })
+  loading.value = false
+  if (signupError) {
+    error.value = signupError.message
+    return
+  }
+  // Show confirmation page
+  router.push("/confirm")
+}
+
+async function handleSignin() {
+  error.value = null
+  loading.value = true
+  const { error: signinError } = await supabase.auth.signInWithPassword({
+    email: signinEmail.value,
+    password: signinPassword.value,
+  })
+  loading.value = false
+  if (signinError) {
+    error.value = signinError.message
+    return
+  }
+  router.push("/")
 }
 </script>
 
@@ -51,8 +106,25 @@ function handleSwitchForm(form: "signup" | "signin") {
       </div>
       <div class="flex flex-1 h-full items-center justify-center">
         <div class="w-full max-w-sm">
-          <SignupForm v-if="showSignup" @switch-form="handleSwitchForm" />
-          <SigninForm v-else @switch-form="handleSwitchForm" />
+          <SignupForm
+            v-if="showSignup"
+            v-model:displayName="signupDisplayName"
+            v-model:email="signupEmail"
+            v-model:password="signupPassword"
+            :loading="loading"
+            :error="error"
+            @switch-form="handleSwitchForm"
+            @submit="handleSignup"
+          />
+          <SigninForm
+            v-else
+            v-model:email="signinEmail"
+            v-model:password="signinPassword"
+            :loading="loading"
+            :error="error"
+            @switch-form="handleSwitchForm"
+            @submit="handleSignin"
+          />
         </div>
       </div>
     </div>

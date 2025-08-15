@@ -1,11 +1,23 @@
 <script setup lang="ts">
+// Component imports
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 const emit = defineEmits<{
   (e: "switch-form", form: "signup" | "signin"): void
+  (e: "submit"): void
 }>()
+
+const props = defineProps<{
+  email: string
+  password: string
+  loading: boolean
+  error: string | null
+}>()
+
+const modelEmail = defineModel<string>('email')
+const modelPassword = defineModel<string>('password')
 </script>
 
 <template>
@@ -22,7 +34,7 @@ const emit = defineEmits<{
       <div class="grid gap-4">
         <div class="grid gap-2">
           <Label for="email">Email</Label>
-          <Input id="email" type="email" placeholder="you@example.com" required />
+          <Input id="email" type="email" placeholder="you@example.com" required v-model="modelEmail" />
         </div>
         <div class="grid gap-2">
           <div class="flex items-center">
@@ -31,11 +43,18 @@ const emit = defineEmits<{
               Forgot your password?
             </a>
           </div>
-          <Input id="password" type="password" required />
+          <Input id="password" type="password" placeholder="••••••••" required v-model="modelPassword" />
         </div>
-        <Button type="submit" class="w-full">
-          Sign in
+        <Button type="submit" class="w-full" :disabled="loading" @click.prevent="emit('submit')">
+          <svg v-if="loading" class="animate-spin mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+          </svg>
+          <span>Sign in</span>
         </Button>
+        <div v-if="error" class="text-red-500 text-sm mt-2 text-center">
+          {{ error }}
+        </div>
         <div
           class="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
           <span class="relative z-10 bg-background px-2 text-muted-foreground">
