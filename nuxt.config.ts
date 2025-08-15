@@ -10,21 +10,31 @@ export default defineNuxtConfig({
         plugins: [tailwindcss()], // Tailwind via Vite plugin
     },
 
-    modules: ["@nuxt/eslint", "@nuxtjs/supabase"], // Supabase + lint integration
+    modules: ["@nuxt/eslint", "@nuxtjs/supabase", "shadcn-nuxt", "@nuxt/fonts"], // Supabase + lint integration
 
     supabase: {
         // Uses env vars (avoid hardcoding)
         url: process.env.SUPABASE_URL,
         key: process.env.SUPABASE_ANON_KEY,
-        redirect: false, // manual route handling after auth events
     },
-
 
     runtimeConfig: {
         public: {
             // Exposed to client; duplication for backward compatibility
             SUPABASE_URL: process.env.SUPABASE_URL,
             SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+        },
+    },
+
+    shadcn: {
+        prefix: "",
+        componentDir: "app/components/ui",
+    },
+
+    fonts: {
+        defaults: {
+            weights: [100, 200, 300, 400, 500, 600, 700, 800, 900],
+            styles: ["normal", "italic"],
         },
     },
 });
