@@ -14,7 +14,7 @@
     "composables": "/app/composables",
     "utils": "/utils/shadcn",
     "ui": "/app/components/ui",
-    "lib": "/app/lib"
+    "lib": "/app/utils/shadcn"
   },
   "iconLibrary": "lucide"
 }

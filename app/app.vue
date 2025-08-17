@@ -27,7 +27,7 @@ async function devLogout() {
         <button
             v-if="isDev"
             @click="devLogout"
-            style="position:fixed;bottom:24px;left:24px;z-index:1000;padding:10px 18px;background:#dc2626;color:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);font-weight:600;opacity:0.95;transition:background 0.2s;"
+            style="position:fixed;top:24px;right:24px;z-index:1000;padding:10px 18px;background:#dc2626;color:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);font-weight:600;opacity:0.5;transition:background 0.2s;"
             title="Dev Logout"
         >
             Log out
