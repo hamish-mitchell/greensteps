@@ -1,11 +1,17 @@
-
 <script setup lang="ts">
+// Toaster component for notifications
 import { Toaster } from '@/components/ui/sonner'
-import 'vue-sonner/style.css'
-const supabase = useSupabaseClient()
-const router = useRouter()
-const isDev = process.dev
 import { toast } from 'vue-sonner'
+import 'vue-sonner/style.css'
+
+// Setup database connection
+const supabase = useSupabaseClient()
+
+// Setup router
+const router = useRouter()
+const isDev = import.meta.dev
+
+// Developer logout util, hidden in prod
 async function devLogout() {
     await supabase.auth.signOut()
     toast.success('Logged out!')

@@ -5,6 +5,7 @@
 
 :root {
     --font-sans: "Poppins";
+
     --background: oklch(1 0 0); /* 0 0% 100% */
     --foreground: oklch(0.145 0 0); /* 240 10% 3.9% */
 
