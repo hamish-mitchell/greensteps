@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Component imports
-import SignupForm from "~/components/SignupForm.vue"
-import SigninForm from "~/components/SigninForm.vue"
+import SignupForm from "@/components/SignupForm.vue"
+import SigninForm from "@/components/SigninForm.vue"
 
 // Switch between signup and signin forms
 const showSignup = ref(false)
