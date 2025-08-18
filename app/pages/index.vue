@@ -10,7 +10,7 @@ async function fetchStreak() {
   loadingStreak.value = true
   streakError.value = null
   try {
-    const result = await $fetch('/api/streakretrival', {
+    const result = await $fetch('/api/getStreak', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${await supabase.auth.getSession().then(r => r.data.session?.access_token ?? '')}`
