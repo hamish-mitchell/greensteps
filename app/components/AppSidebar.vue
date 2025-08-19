@@ -1,178 +1,136 @@
 <script setup lang="ts">
-import type { SidebarProps } from "@/components/ui/sidebar"
+import type { SidebarProps } from "@/components/ui/sidebar";
 
 import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
-} from "lucide-vue-next"
-import NavMain from "@/components/NavMain.vue"
-import NavProjects from "@/components/NavProjects.vue"
-import NavUser from "@/components/NavUser.vue"
-import TeamSwitcher from "@/components/TeamSwitcher.vue"
-
+    Cloud,
+    Cog,
+    Compass,
+    Frame,
+    LayoutDashboard,
+    Leaf,
+    Lightbulb,
+    Map,
+    MessageCircleMore,
+    PieChart,
+    Trophy,
+} from "lucide-vue-next";
+import NavMain from "@/components/NavMain.vue";
+import NavSecondary from "@/components/NavSecondary.vue";
+import NavUser from "@/components/NavUser.vue";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarRail,
-} from "@/components/ui/sidebar"
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+} from "@/components/ui/sidebar";
 
 const props = withDefaults(defineProps<SidebarProps>(), {
-  collapsible: "icon",
-})
+    variant: "inset",
+});
 
-// This is sample data.
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
+    user: {
+        name: "John Doe",
+        email: "john.doe@gmail.com",
+        avatar: "",
     },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
-  navMain: [
-    {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
+    navMain: [
         {
-          title: "History",
-          url: "#",
+            title: "Dashboard",
+            url: "#",
+            icon: LayoutDashboard,
+            isActive: true,
         },
         {
-          title: "Starred",
-          url: "#",
+            title: "Quests",
+            url: "#",
+            icon: Compass,
+            notification: 3,
         },
         {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
+            title: "Leaderboard",
+            url: "#",
+            icon: Trophy,
+            items: [],
         },
         {
-          title: "Explorer",
-          url: "#",
+            title: "Emissions",
+            url: "#",
+            icon: Cloud,
+            items: [],
         },
         {
-          title: "Quantum",
-          url: "#",
+            title: "Tips",
+            url: "#",
+            icon: Lightbulb,
+            items: [],
         },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
+    ],
+    navSecondary: [
         {
-          title: "Introduction",
-          url: "#",
+            title: "Support",
+            url: "#",
+            icon: MessageCircleMore,
         },
         {
-          title: "Get Started",
-          url: "#",
+            title: "Settings",
+            url: "#",
+            icon: Cog,
+        },
+    ],
+    projects: [
+        {
+            name: "Design Engineering",
+            url: "#",
+            icon: Frame,
         },
         {
-          title: "Tutorials",
-          url: "#",
+            name: "Sales & Marketing",
+            url: "#",
+            icon: PieChart,
         },
         {
-          title: "Changelog",
-          url: "#",
+            name: "Travel",
+            url: "#",
+            icon: Map,
         },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
-}
+    ],
+};
 </script>
 
 <template>
-  <Sidebar v-bind="props">
-    <SidebarHeader>
-      <TeamSwitcher :teams="data.teams" />
-    </SidebarHeader>
-    <SidebarContent>
-      <NavMain :items="data.navMain" />
-      <NavProjects :projects="data.projects" />
-    </SidebarContent>
-    <SidebarFooter>
-      <NavUser :user="data.user" />
-    </SidebarFooter>
-    <SidebarRail />
-  </Sidebar>
+    <Sidebar v-bind="props">
+        <SidebarHeader>
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton size="lg" as-child>
+                        <a href="#">
+                            <div
+                                class="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-sidebar-primary-foreground"
+                            >
+                                <Leaf class="size-4" />
+                            </div>
+                            <div
+                                class="grid flex-1 text-left text-sm leading-tight"
+                            >
+                                <span class="truncate font-semibold"
+                                    >Greensteps</span
+                                >
+                            </div>
+                        </a>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
+        </SidebarHeader>
+        <SidebarContent>
+            <NavMain :items="data.navMain" />
+            <NavSecondary :items="data.navSecondary" class="mt-auto" />
+        </SidebarContent>
+        <SidebarFooter>
+            <NavUser :user="data.user" />
+        </SidebarFooter>
+    </Sidebar>
 </template>

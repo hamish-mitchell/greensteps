@@ -2,7 +2,6 @@
 import { ref } from "vue";
 
 const supabase = useSupabaseClient();
-        
 
 const data = ref(null);
 const electricityUsage = ref(0);
@@ -46,12 +45,10 @@ const fetchData = async () => {
                 source: "coal",
                 amount: electricityUsage.value,
             };
-            await supabase
-            .from('activities')
-            .insert({
-                'type': 'electricity',
-                amount: electricityUsage.value
-            })
+            await supabase.from("activities").insert({
+                type: "electricity",
+                amount: electricityUsage.value,
+            });
         } else if (activityType.value === "food") {
             if (selectedFoodType.value === "other") {
                 data.value = {
@@ -78,8 +75,6 @@ const fetchData = async () => {
         loading.value = false;
     }
 };
-
-
 </script>
 
 <template>

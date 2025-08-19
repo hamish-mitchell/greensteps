@@ -33,11 +33,11 @@ async function updateProfile() {
         const user = useSupabaseUser(); // re-grab in case of reactivity changes
 
         const updates = {
-            id: user.value.id,          // row primary key
+            id: user.value.id, // row primary key
             username: username.value,
             website: website.value,
             avatar_url: avatar_path.value,
-            updated_at: new Date(),     // server-side could also set this
+            updated_at: new Date(), // server-side could also set this
         };
 
         const { error } = await supabase.from("profiles").upsert(updates, {

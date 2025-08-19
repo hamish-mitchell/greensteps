@@ -1,5 +1,3 @@
 <template>
-    <div>
-        i guess
-    </div>
+    <div> i guess </div>
 </template>

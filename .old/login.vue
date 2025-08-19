@@ -50,12 +50,22 @@ async function signOut() {
             </div>
             <div v-else class="flex flex-col items-center">
                 <input v-model="email" placeholder="Email" class="input" />
-                <input v-model="password" type="password" placeholder="Password" class="input" />
-                <button class="btn p-2 bg-blue-500 hover:bg-blue-700 border border-blue-100" @click="signIn">Sign
-                    In</button>
+                <input
+                    v-model="password"
+                    type="password"
+                    placeholder="Password"
+                    class="input"
+                />
+                <button
+                    class="btn p-2 bg-blue-500 hover:bg-blue-700 border border-blue-100"
+                    @click="signIn"
+                    >Sign In</button
+                >
                 <p v-if="error" class="text-red-500">{{ error }}</p>
             </div>
-            <NuxtLink to="/signup" class="text-blue-500 mt-4">Create Account</NuxtLink>
+            <NuxtLink to="/signup" class="text-blue-500 mt-4"
+                >Create Account</NuxtLink
+            >
         </div>
     </div>
 </template>
