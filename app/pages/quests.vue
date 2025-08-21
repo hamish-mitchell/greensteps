@@ -14,6 +14,48 @@ import {
     SidebarProvider,
     SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { useSupabaseClient, useSupabaseUser } from "#imports";
+import { ref } from "vue";
+import { Button } from "@/components/ui/button"; 
+
+const supabase = useSupabaseClient();
+const user = useSupabaseUser();
+const loading = ref(false);
+const errorMsg = ref<string | null>(null);
+const quests = ref<any[]>([]);
+
+async function startQuest() {
+    console.log("startQuest called"); // Debug
+    if (!user.value) {
+        errorMsg.value = "You must be signed in.";
+        return;
+    }
+    loading.value = true;
+    errorMsg.value = null;
+    try {
+        const token = await supabase.auth.getSession().then((r) => r.data.session?.access_token ?? "");
+        console.log("Token acquired:", token);
+        const res = await $fetch<{ error?: string, quests?: any[] }>("/api/getQuest", {
+            method: "POST",
+            body: { questId: 0 },
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        console.log("API response:", res);
+        if (res && res.error) {
+            errorMsg.value = res.error;
+        } else if (res && res.quests) {
+            quests.value = res.quests;
+        }
+    } catch (e: any) {
+        console.error("Caught error:", e);
+        errorMsg.value = e.message || String(e);
+    } finally {
+        loading.value = false;
+        console.log("Loading set to false");
+    }
+}
 </script>
 
 <template>
@@ -44,8 +86,20 @@ import {
             <div class="flex flex-1 flex-col gap-4 p-4 pt-0">
                 <div>
                     <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-                        <Button>start quest</Button>
+                        <Button @click="startQuest" :disabled="loading">
+                            <span v-if="loading">Starting...</span>
+                            <span v-else>start quest</span>
+                        </Button>
+                        <div v-if="errorMsg" class="text-red-500">{{ errorMsg }}</div>
                     </div>
+                </div>
+                <div v-if="quests.length">
+                    <h2>Quests:</h2>
+                    <ul>
+                        <li v-for="quest in quests" :key="quest.id">
+                            {{ quest.name || quest.title || quest.id }}
+                        </li>
+                    </ul>
                 </div>
             </div>
         </SidebarInset>
