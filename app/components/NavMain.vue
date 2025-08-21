@@ -55,7 +55,7 @@ defineProps<{
                             </div>
                             <span
                                 v-if="item.notification"
-                                class="ml-2 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold px-2 py-0.5 min-w-[1.5em] h-5"
+                                class="ml-2 inline-flex items-center justify-center rounded-full bg-primary text-white text-xs font-bold px-2 py-0.5 min-w-[1.5em] h-5"
                             >
                                 {{ item.notification }}
                             </span>

@@ -25,7 +25,9 @@ async function devLogout() {
 <template>
     <Toaster />
     <!-- Hey look it's my laptop! -->
-    <NuxtPage />
+    <NuxtLayout>
+        <NuxtPage />
+    </NuxtLayout>
     <button
         v-if="isDev && !tempHideLogout"
         style="

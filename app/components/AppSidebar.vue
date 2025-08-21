@@ -39,31 +39,32 @@ const data = {
     navMain: [
         {
             title: "Dashboard",
-            url: "#",
+            url: "/",
             icon: LayoutDashboard,
             isActive: true,
         },
         {
             title: "Quests",
-            url: "#",
+            url: "/quests",
             icon: Compass,
             notification: 3,
         },
         {
             title: "Leaderboard",
-            url: "#",
+            
+            url: "/leaderboard",
             icon: Trophy,
             items: [],
         },
         {
             title: "Emissions",
-            url: "#",
+            url: "/emissions",
             icon: Cloud,
             items: [],
         },
         {
             title: "Tips",
-            url: "#",
+            url: "/tips",
             icon: Lightbulb,
             items: [],
         },
