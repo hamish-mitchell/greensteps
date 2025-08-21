@@ -18,7 +18,6 @@ import {
 import { capitalise } from "@/utils/capitalise";
 
 const route = useRoute();
-const tagline = computed(() => route.meta.tagline as string | undefined);
 </script>
 
 <template>
@@ -60,7 +59,7 @@ const tagline = computed(() => route.meta.tagline as string | undefined);
                             <Separator orientation="vertical" class="h-4" />
                         </div>
                         <div class="text-muted-foreground text-sm">
-                            {{ tagline }}
+                            <!--tagline-->
                         </div>
                     </div>
                 </div>

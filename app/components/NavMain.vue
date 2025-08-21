@@ -18,7 +18,7 @@ import {
     SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 
-defineProps<{
+const _props = defineProps<{
     items: {
         title: string;
         url: string;
@@ -31,6 +31,18 @@ defineProps<{
         notification?: number;
     }[];
 }>();
+
+// Active route helpers
+const route = useRoute();
+const isActive = (url: string) => {
+    const path = route.path;
+    if (!url) return false;
+    return path === url || path.startsWith(url + "/");
+};
+const isParentActive = (item: (typeof _props.items)[number]) => {
+    if (isActive(item.url)) return true;
+    return item.items?.some((s) => isActive(s.url)) ?? false;
+};
 </script>
 
 <template>
@@ -41,10 +53,14 @@ defineProps<{
                 v-for="item in items"
                 :key="item.title"
                 as-child
-                :default-open="item.isActive"
+                :default-open="isParentActive(item)"
             >
                 <SidebarMenuItem>
-                    <SidebarMenuButton as-child :tooltip="item.title">
+                    <SidebarMenuButton
+                        as-child
+                        :tooltip="item.title"
+                        :is-active="isParentActive(item)"
+                    >
                         <a
                             :href="item.url"
                             class="flex items-center justify-between w-full"
@@ -76,7 +92,10 @@ defineProps<{
                                     v-for="subItem in item.items"
                                     :key="subItem.title"
                                 >
-                                    <SidebarMenuSubButton as-child>
+                                    <SidebarMenuSubButton
+                                        as-child
+                                        :is-active="isActive(subItem.url)"
+                                    >
                                         <a :href="subItem.url">
                                             <span>{{ subItem.title }}</span>
                                         </a>
