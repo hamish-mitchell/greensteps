@@ -10,7 +10,7 @@ export default defineNuxtConfig({
         plugins: [tailwindcss()],
     },
 
-    modules: ["@nuxt/eslint", "@nuxtjs/supabase"],
+    modules: ["@nuxt/eslint"],
 
     supabase: {
         url: process.env.SUPABASE_URL,

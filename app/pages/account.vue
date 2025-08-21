@@ -65,15 +65,15 @@ async function signOut() {
     <form class="form-widget" @submit.prevent="updateProfile">
         <div>
             <label for="email">Email</label>
-            <input id="email" type="text" :value="user.email" disabled />
+            <input id="email" type="text" :value="user.email" disabled >
         </div>
         <div>
             <label for="username">Username</label>
-            <input id="username" v-model="username" type="text" />
+            <input id="username" v-model="username" type="text" >
         </div>
         <div>
             <label for="website">Website</label>
-            <input id="website" v-model="website" type="url" />
+            <input id="website" v-model="website" type="url" >
         </div>
 
         <div>
@@ -82,7 +82,7 @@ async function signOut() {
                 class="button primary block"
                 :value="loading ? 'Loading ...' : 'Update'"
                 :disabled="loading"
-            />
+            >
         </div>
 
         <div>

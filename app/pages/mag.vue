@@ -33,7 +33,7 @@ const handleLogin = async () => {
                     class="inputField"
                     type="email"
                     placeholder="Your email"
-                />
+                >
             </div>
             <div>
                 <input
@@ -41,7 +41,7 @@ const handleLogin = async () => {
                     class="button block"
                     :value="loading ? 'Loading' : 'Send magic link'"
                     :disabled="loading"
-                />
+                >
             </div>
         </div>
     </form>

@@ -7,13 +7,13 @@
                 <button class="btn" @click="signOut">Sign Out</button>
             </div>
             <div v-else class="flex flex-col items-center">
-                <input v-model="email" placeholder="Email" class="input" />
+                <input v-model="email" placeholder="Email" class="input" >
                 <input
                     v-model="password"
                     type="password"
                     placeholder="Password"
                     class="input"
-                />
+                >
                 <button class="btn" @click="signIn">Sign In</button>
                 <p v-if="error" class="text-red-500">{{ error }}</p>
             </div>

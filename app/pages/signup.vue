@@ -1,19 +1,19 @@
 <!-- SignUpForm.vue -->
 <template>
     <form @submit.prevent="signUp">
-        <input v-model="email" type="email" placeholder="Email" required />
+        <input v-model="email" type="email" placeholder="Email" required >
         <input
             v-model="password"
             type="password"
             placeholder="Password"
             required
-        />
+        >
         <input
             v-model="displayName"
             type="text"
             placeholder="Display Name"
             required
-        />
+        >
         <button type="submit">Sign Up</button>
         <p v-if="error" style="color: red">{{ error }}</p>
         <p v-if="success" style="color: green"
