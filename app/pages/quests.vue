@@ -56,6 +56,49 @@ async function startQuest() {
         console.log("Loading set to false");
     }
 }
+
+async function activateQuest(questId: number) {
+    loading.value = true;
+    errorMsg.value = null;
+    try {
+        const token = await supabase.auth.getSession().then((r) => r.data.session?.access_token ?? "");
+        console.log("Token acquired for activation:", token);
+        const res = await $fetch<{ error?: string }>("/api/activateQuest", {
+            method: "POST",
+            body: { questId },
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        console.log("Activate API response:", res);
+        if (res && res.error) {
+            errorMsg.value = res.error;
+        } else {
+            // Quest activated, you can update the UI or quests state here if needed
+            startQuest(); // Refresh the quests
+        }
+    } catch (e: any) {
+        console.error("Caught error during quest activation:", e);
+        errorMsg.value = e.message || String(e);
+    } finally {
+        loading.value = false;
+        console.log("Loading set to false after activation");
+    }
+}
+
+async function fetchQuests() {
+    const response = await fetch(
+  'https://your-project.supabase.co/functions/create-active-quest', 
+  {
+    method: 'POST',
+    headers: {
+    'Authorization': `Bearer ${await supabase.auth.getSession().then(r => r.data.session?.access_token ?? "")}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ quest_id: 'your_quest_id' })
+  }
+);
+}
 </script>
 
 <template>
@@ -86,7 +129,7 @@ async function startQuest() {
             <div class="flex flex-1 flex-col gap-4 p-4 pt-0">
                 <div>
                     <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-                        <Button @click="startQuest" :disabled="loading">
+                        <Button @click="fetchQuests" :disabled="loading">
                             <span v-if="loading">Starting...</span>
                             <span v-else>start quest</span>
                         </Button>
