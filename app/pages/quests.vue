@@ -27,6 +27,7 @@ interface UserQuest {
 
 const quests = ref<Quest[]>([])
 const activeQuests = ref<UserQuest[]>([])
+const completedQuests = ref<UserQuest[]>([])
 
 const {data} = await supabase
     .from("quests")
@@ -42,7 +43,8 @@ if (user.value?.id) {
 }
 
 quests.value = data || [];
-activeQuests.value = activeQuestsData || [];
+activeQuests.value = activeQuestsData?.filter(quest => quest.progress < quest.value) || [];
+completedQuests.value = activeQuestsData?.filter(quest => quest.progress >= quest.value) || [];
 
 async function startQuest(questId: number) {
     if (!user.value?.id) return;
@@ -67,13 +69,14 @@ async function startQuest(questId: number) {
     <div>
         <div class="grid auto-rows-min gap-4 md:grid-cols-3">
             <div class="gap-4 flex flex-col">
-                <p class="font-mono">
-                    {{ quests }}
-                </p>
                 <Button v-for="quest in quests" :key="quest.id" @click="startQuest(quest.id)">Start Quest "{{ quest.name }}"</Button>
                 <div class="mt-4">
                     <h2 class="font-bold">Active Quests</h2>
                     <p class="font-mono">{{ activeQuests }}</p>
+                </div>
+                <div class="mt-4">
+                    <h2 class="font-bold">Completed Quests</h2>
+                    <p class="font-mono">{{ completedQuests }}</p>
                 </div>
             </div>
         </div>

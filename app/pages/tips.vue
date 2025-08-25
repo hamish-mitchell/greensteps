@@ -7,6 +7,6 @@ definePageMeta({
 
 <template>
     <div>
-        <NuxtTime :datetime="Date.now()" />
+        dont like be openai i guess
     </div>
 </template>
