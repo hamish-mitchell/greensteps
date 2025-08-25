@@ -17,11 +17,11 @@ if (user.value?.id) {
 
     const { data } = await supabase
         .from("profiles")
-        .select("username, current_streak")
+        .select("current_streak")
         .eq("id", userId)
-        .single<{ username: string; current_streak: number }>();
+        .single<{ current_streak: number }>();
 
-    username.value = data?.username || "";
+    username.value = user.value.identities[0]?.identity_data.display_name || "";
     streak.value = data?.current_streak || 0;
 
     await supabase.rpc('update_streak');
@@ -41,8 +41,11 @@ if (user.value?.id) {
                 <Plus /> New Activity
             </Button>
         </div>
-        <div class="grid auto-rows-min gap-4 md:grid-cols-4">
-
+        <div class="grid auto-rows-min gap-4 md:grid-cols-4 mt-4">
+            <div class="aspect-video w-full bg-muted rounded-lg" />
+            <div class="aspect-video w-full bg-muted rounded-lg" />
+            <div class="aspect-video w-full bg-muted rounded-lg" />
+            <div class="aspect-video w-full bg-muted rounded-lg" />
         </div>
     </div>
 </template>
