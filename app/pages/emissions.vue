@@ -4,7 +4,7 @@ definePageMeta({
   tagline: "Track and understand your carbon footprint.",
 })
 
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 import Card from '~/components/ui/card/Card.vue'
 import Button from '~/components/ui/button/Button.vue'
@@ -30,6 +30,7 @@ type HistoryItem = {
   type: 'debit' | 'credit'
 }
 
+// Monthly emissions (kg CO2)
 const monthlyEmissions = ref([
   { label: 'Jan', value: 45 },
   { label: 'Feb', value: 40 },
@@ -40,6 +41,7 @@ const monthlyEmissions = ref([
   { label: 'Jul', value: 30 },
 ])
 
+// Category breakdown (%)
 const categoryBreakdown = ref([
   { label: 'Transport', value: 45, color: '#0ea5e9' },
   { label: 'Recycling', value: 25, color: '#10b981' },
@@ -79,6 +81,109 @@ function fmtImpact(v: number) {
 }
 function impactClass(v: number) {
   return v > 0 ? 'text-red-500' : 'text-emerald-600'
+}
+
+// ---- Chart.js Integration ----
+const barCanvas = ref<HTMLCanvasElement | null>(null)
+const donutCanvas = ref<HTMLCanvasElement | null>(null)
+
+import type { Chart as ChartType } from 'chart.js'
+let ChartLib: any // will hold the Chart constructor after dynamic import
+let barChart: ChartType | null = null
+let donutChart: ChartType | null = null
+
+onMounted(async () => {
+  // Ensure dependency installed: npm i chart.js
+  // Dynamic import so SSR is safe
+  const mod = await import('chart.js/auto')
+  // chart.js/auto default export is the Chart constructor
+  ChartLib = mod.default
+  if (!ChartLib) {
+    console.error('Chart.js failed to load')
+    return
+  }
+  buildBarChart()
+  buildDonutChart()
+})
+
+onBeforeUnmount(() => {
+  barChart?.destroy()
+  donutChart?.destroy()
+})
+
+function buildBarChart() {
+  if (!barCanvas.value || !ChartLib) return
+  barChart?.destroy()
+  barChart = new ChartLib(barCanvas.value.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: monthlyEmissions.value.map(m => m.label),
+      datasets: [
+        {
+          label: 'Monthly CO₂ (kg)',
+          data: monthlyEmissions.value.map(m => m.value),
+          backgroundColor: 'rgba(16,185,129,0.7)',
+          borderRadius: 6,
+          maxBarThickness: 38
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: getCssVar('--vis-text-color', '#666') }
+        },
+        y: {
+          grid: { color: 'hsl(var(--border)/0.4)' },
+          ticks: { color: getCssVar('--vis-text-color', '#666') },
+          beginAtZero: true
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: (ctx: any) => `${ctx.parsed.y} kg` } }
+      }
+    }
+  })
+}
+
+function buildDonutChart() {
+  if (!donutCanvas.value || !ChartLib) return
+  donutChart?.destroy()
+  const colors = categoryBreakdown.value.map(c => c.color)
+  donutChart = new ChartLib(donutCanvas.value.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: categoryBreakdown.value.map(c => c.label),
+      datasets: [
+        {
+          label: 'Breakdown',
+          data: categoryBreakdown.value.map(c => c.value),
+          backgroundColor: colors,
+          borderWidth: 0,
+          hoverOffset: 6
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '60%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: (ctx: any) => `${ctx.label}: ${ctx.parsed} %` } }
+      }
+    }
+  })
+}
+
+function getCssVar(name: string, fallback: string) {
+  if (typeof window === 'undefined') return fallback
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name)
+  return v?.trim() || fallback
 }
 </script>
 
@@ -123,23 +228,23 @@ function impactClass(v: number) {
 
       <!-- Charts Row -->
       <div class="grid gap-6 lg:grid-cols-3">
+        <!-- Bar Chart -->
         <Card class="p-4 lg:col-span-2 flex flex-col">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-sm font-medium text-muted-foreground uppercase">Monthly CO₂ Emissions (kg)</h2>
             <Button size="sm" variant="ghost" class="h-7 text-xs">View Detail</Button>
           </div>
-          <div class="flex-1 flex items-center justify-center text-xs text-muted-foreground h-[240px] border rounded-md border-dashed">
-            <!-- ChartBar disabled -->
-            Charts temporarily disabled
+          <div class="flex-1 h-[260px] relative">
+            <canvas ref="barCanvas" aria-label="Monthly emissions bar chart" role="img"></canvas>
           </div>
         </Card>
 
+        <!-- Donut Chart -->
         <Card class="p-4 flex flex-col">
           <h2 class="text-sm font-medium text-muted-foreground uppercase mb-4">Emissions Breakdown</h2>
           <div class="flex items-center gap-4">
-            <div class="w-40 h-40 flex items-center justify-center text-[10px] text-muted-foreground border rounded-full border-dashed">
-              <!-- ChartDonut disabled -->
-              Donut chart disabled
+            <div class="w-40 h-40 relative">
+              <canvas ref="donutCanvas" aria-label="Category emissions breakdown" role="img"></canvas>
             </div>
             <ul class="flex-1 space-y-1 text-xs">
               <li v-for="c in categoryBreakdown" :key="c.label" class="flex items-center justify-between">
