@@ -2,7 +2,6 @@
   <div class="antialiased bg-body font-body h-screen w-screen">
     <!-- Header section -->
     <section class="relative bg-teal-900">
-      <img class="absolute top-0 left-0 w-full h-full" src="/fauna-assets/headers/bg-waves.png" alt="" >
       <nav class="py-6">
         <div class="container mx-auto px-4">
           <div class="relative flex items-center justify-between">
@@ -15,7 +14,7 @@
             <ul class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 hidden md:flex">
               <li class="mr-8"><NuxtLink class="inline-block text-white hover:text-lime-500 font-medium" to="#">About us</NuxtLink></li>
               <li class="mr-8"><NuxtLink class="inline-block text-white hover:text-lime-500 font-medium" to="pricing">Pricing</NuxtLink></li>
-              <li><NuxtLink class="inline-block text-white hover:text-lime-500 font-medium" to="blog">Blog</NuxtLink></li>
+
             </ul>
           </div>
         </div>
@@ -43,7 +42,6 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
         <NuxtLink to="/" class="block hover:underline">Home</NuxtLink>
         <NuxtLink to="#" class="block hover:underline">About</NuxtLink>
         <NuxtLink to="pricing" class="block hover:underline">Pricing</NuxtLink>
-        <NuxtLink to="#" class="block hover:underline">Services</NuxtLink>
       </div>
 
       <!-- Hero Section -->
@@ -53,12 +51,16 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
           <p class="max-w-xl mx-auto text-lg text-white mb-6">
             We track carbon emissions - turning insights into actions.
           </p>
-          <NuxtLink
-            to="#services"
-            class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Sign Up
-          </NuxtLink>
+          <div>
+            <button class="items-center justify-center text-lg font-medium text-white hover:text-[#012606] border border-[#00a34a] hover:border-[#36e26a] bg-[#00a34a] hover:bg-[#36e26a] rounded-full transition duration-200">
+            <NuxtLink
+              to=""
+              class="inline-block px-6 py-3"
+            >
+              Sign Up
+            </NuxtLink>
+            </button>
+          </div>
         </div>
       </section>
 

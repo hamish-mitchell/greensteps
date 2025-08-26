@@ -28,10 +28,6 @@
                     <NuxtLink class="inline-block text-white hover:text-lime-500 font-medium" to="#">Pricing
                     </NuxtLink>
                   </li>
-                  <li class="mr-8">
-                    <NuxtLink class="inline-block text-white hover:text-lime-500 font-medium" to="blog">Blog
-                    </NuxtLink>
-                  </li>
                 </ul>
               </div>
             </div>
