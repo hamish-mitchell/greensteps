@@ -3,7 +3,7 @@
 
     <!-- Header section -->
     <section class="relative bg-teal-900">
-      <img class="absolute top-0 left-0 w-full h-full" src="/fauna-assets/headers/bg-waves.png" alt="">
+      <img class="absolute top-0 left-0 w-full h-full" src="/images/lines.svg" alt="">
       <nav class="py-6">
         <div class="container mx-auto px-4">
           <div class="relative flex items-center justify-between">
@@ -53,7 +53,7 @@
       <nav class="relative flex flex-col py-7 px-10 w-full h-full bg-white overflow-y-auto">
         <div class="flex items-center justify-between">
           <NuxtLink to="#" class="inline-block">
-            <img class="h-8" src="/fauna-assets/logos/sign-logo-flow.svg" alt="">
+            <img class="h-8" src="/images/the-asset.svg" alt="">
           </NuxtLink>
           <div class="flex items-center">
             <NuxtLink to="#"

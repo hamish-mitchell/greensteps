@@ -3,7 +3,7 @@
     <div class="h-full">
       <div class="h-full">
         <section class="relative bg-teal-900 h-full">
-          <img class="absolute top-0 left-0 w-full h-full" src="/fauna-assets/headers/bg-waves.png" alt="" >
+          <img class="absolute top-0 left-0 w-full h-full" src="/images/lines.svg" alt="" >
           <nav class="py-6">
             <div class="container mx-auto px-4">
               <div class="relative flex items-center justify-between">
