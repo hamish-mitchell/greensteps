@@ -94,6 +94,12 @@ const tipOfDay = ref({
   body: 'Grow herbs at home to cut plastic packaging and transport emissions while keeping flavors fresh.',
   image: 'https://images.unsplash.com/photo-1524594154908-edd3327fb021?auto=format&fit=crop&w=800&q=60'
 })
+
+const expandedArticleId = ref<number | null>(null)
+
+function toggleExpand(id: number) {
+  expandedArticleId.value = expandedArticleId.value === id ? null : id
+}
 </script>
 
 <template>
@@ -118,7 +124,13 @@ const tipOfDay = ref({
           style="max-height: calc(100vh - 250px)"
           aria-label="Latest articles list"
         >
-          <Card v-for="a in filteredArticles" :key="a.id" class="p-4 hover:bg-muted/40 transition">
+          <Card
+            v-for="a in filteredArticles"
+            :key="a.id"
+            class="p-4 hover:bg-muted/40 transition cursor-pointer"
+            :class="{ 'expanded-card': expandedArticleId === a.id }"
+            @click="toggleExpand(a.id)"
+          >
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
               <div class="flex-1 space-y-1">
                 <div class="flex items-center gap-2">
@@ -128,6 +140,15 @@ const tipOfDay = ref({
                 <p class="text-sm text-muted-foreground line-clamp-2">
                   {{ a.excerpt }}
                 </p>
+                <transition name="fade">
+                  <div v-if="expandedArticleId === a.id" class="mt-2 text-sm text-foreground">
+                    <!-- Expanded content goes here. Replace with real details if available. -->
+                    <p>
+                      More details about <strong>{{ a.title }}</strong> by {{ a.author.name }}.
+                      <!-- Example: You could add a longer excerpt, links, etc. -->
+                    </p>
+                  </div>
+                </transition>
               </div>
               <div class="flex items-center gap-2 shrink-0 self-start sm:self-center">
                 <Avatar class="h-8 w-8">
@@ -201,5 +222,20 @@ const tipOfDay = ref({
 }
 .custom-scroll:hover::-webkit-scrollbar-thumb {
   background: hsl(var(--muted), 0.7);
+}
+
+.expanded-card {
+  background: hsl(var(--muted), 0.2);
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
+  transform: scale(1.03);
+  z-index: 10;
+  transition: box-shadow 0.2s, transform 0.2s, background 0.2s;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.2s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 </style>

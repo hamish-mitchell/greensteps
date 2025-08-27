@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useSupabaseUser } from "#imports"; // or from "@nuxtjs/supabase" if not auto-imported
 import type { SidebarProps } from "@/components/ui/sidebar";
 
 import {
@@ -99,6 +100,17 @@ const data = {
         },
     ],
 };
+
+const supabaseUser = useSupabaseUser();
+
+const userProfile = computed(() => {
+    if (!supabaseUser.value) return null;
+    return {
+        name: supabaseUser.value.user_metadata?.display_name || supabaseUser.value.email?.split("@")[0] || "User",
+        email: supabaseUser.value.email || "",
+        avatar: supabaseUser.value.user_metadata?.avatar_url || "",
+    };
+});
 </script>
 
 <template>
@@ -148,7 +160,7 @@ const data = {
             <NavSecondary :items="data.navSecondary" class="mt-auto" />
         </SidebarContent>
         <SidebarFooter>
-            <NavUser :user="data.user" />
+            <NavUser v-if="userProfile" :user="userProfile" />
         </SidebarFooter>
     </Sidebar>
 </template>

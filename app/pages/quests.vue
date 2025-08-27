@@ -107,15 +107,15 @@ function tabClass(tab: typeof activeTab.value) {
 				</div>
 			</div>
 
-			<div class="grid gap-6 xl:grid-cols-3">
-				<!-- Quest List (spans 2 cols) -->
-				<div class="xl:col-span-2 space-y-4">
+			<div class="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+				<!-- Quest List (spans 2 cols on xl) -->
+				<div class="md:col-span-1 xl:col-span-2 space-y-4 order-1">
 					<!-- Tabs -->
-						<div class="flex items-center gap-2 text-xs font-medium">
-							<button :class="tabClass('active')" @click="activeTab='active'">Active Quests (3)</button>
-							<button :class="tabClass('new')" @click="activeTab='new'">New Quests</button>
-							<button :class="tabClass('completed')" @click="activeTab='completed'">Completed</button>
-						</div>
+					<div class="flex items-center gap-2 text-xs font-medium">
+						<button :class="tabClass('active')" @click="activeTab='active'">Active Quests (3)</button>
+						<button :class="tabClass('new')" @click="activeTab='new'">New Quests</button>
+						<button :class="tabClass('completed')" @click="activeTab='completed'">Completed</button>
+					</div>
 
 					<!-- Quest Cards -->
 					<div v-if="filteredQuests.length" class="space-y-4">
@@ -145,7 +145,7 @@ function tabClass(tab: typeof activeTab.value) {
 				</div>
 
 				<!-- Featured Quest -->
-				<div class="space-y-4">
+				<div class="order-2 space-y-4">
 					<Card class="p-0 overflow-hidden flex flex-col border">
 						<div class="flex items-center justify-between px-4 pt-4">
 							<div class="flex items-center gap-1 text-xs font-medium text-yellow-600">

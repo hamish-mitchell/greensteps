@@ -18,11 +18,18 @@ type UserMetadata = {
 };
 
 // Safer username derivation
-const username = computed(() =>
-    (user.value?.user_metadata as UserMetadata)?.full_name ||
-    user.value?.email?.split("@")[0] ||
-    ""
-);
+const username = computed(() => {
+    // Prefer display_name from DB profile if available
+    const displayName = user.value?.user_metadata?.display_name;
+    if (displayName) return displayName;
+
+    // Fallback to full_name from user metadata
+    const fullName = (user.value?.user_metadata as UserMetadata)?.full_name;
+    if (fullName) return fullName;
+
+    // Fallback to email prefix
+    return user.value?.email?.split("@")[0] || "";
+});
 
 // Friendly label (handles plural + punctuation)
 const streakLabel = computed(() => {
