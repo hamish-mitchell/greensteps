@@ -73,30 +73,13 @@ const data = {
     navSecondary: [
         {
             title: "Support",
-            url: "#",
+            url: "/support",
             icon: MessageCircleMore,
         },
         {
             title: "Settings",
-            url: "#",
+            url: "/settings",
             icon: Cog,
-        },
-    ],
-    projects: [
-        {
-            name: "Design Engineering",
-            url: "#",
-            icon: Frame,
-        },
-        {
-            name: "Sales & Marketing",
-            url: "#",
-            icon: PieChart,
-        },
-        {
-            name: "Travel",
-            url: "#",
-            icon: Map,
         },
     ],
 };
