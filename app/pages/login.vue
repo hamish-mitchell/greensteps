@@ -2,9 +2,11 @@
 // Component imports
 import SignupForm from "@/components/SignupForm.vue";
 import SigninForm from "@/components/SigninForm.vue";
+import ResetPasswordForm from "@/components/ResetPasswordForm.vue";
 
 // Switch between signup and signin forms
 const showSignup = ref(false);
+const showReset = ref(false);
 
 // Form state
 const signupDisplayName = ref("");
@@ -12,6 +14,7 @@ const signupEmail = ref("");
 const signupPassword = ref("");
 const signinEmail = ref("");
 const signinPassword = ref("");
+const resetEmail = ref("");
 
 // Loading and error state
 const loading = ref(false);
@@ -21,8 +24,9 @@ const error = ref<string | null>(null);
 const supabase = useSupabaseClient();
 const router = useRouter();
 
-function handleSwitchForm(form: "signup" | "signin") {
+function handleSwitchForm(form: "signup" | "signin" | "reset") {
     showSignup.value = form === "signup";
+    showReset.value = form === "reset";
     error.value = null;
     loading.value = false;
 }
@@ -62,6 +66,18 @@ async function handleSignin() {
         return;
     }
     router.push("/");
+}
+
+async function handleReset() {
+    error.value = null;
+    loading.value = true;
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail.value);
+    loading.value = false;
+    if (resetError) {
+        error.value = resetError.message;
+        return;
+    }
+    error.value = "If your email is registered, a reset link has been sent.";
 }
 </script>
 
@@ -110,13 +126,21 @@ async function handleSignin() {
                         @submit="handleSignup"
                     />
                     <SigninForm
-                        v-else
+                        v-else-if="!showReset"
                         v-model:email="signinEmail"
                         v-model:password="signinPassword"
                         :loading="loading"
                         :error="error"
                         @switch-form="handleSwitchForm"
                         @submit="handleSignin"
+                    />
+                    <ResetPasswordForm
+                        v-else
+                        v-model:email="resetEmail"
+                        :loading="loading"
+                        :error="error"
+                        @switch-form="handleSwitchForm"
+                        @submit="handleReset"
                     />
                 </div>
             </div>

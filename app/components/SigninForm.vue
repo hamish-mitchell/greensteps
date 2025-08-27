@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 const emit = defineEmits<{
-    (e: "switch-form", form: "signup" | "signin"): void;
+    (e: "switch-form", form: "signup" | "signin" | "reset"): void;
     (e: "submit"): void;
 }>();
 
@@ -54,6 +54,7 @@ const modelPassword = defineModel<string>("password");
                         <a
                             href="#"
                             class="ml-auto inline-block text-sm underline"
+                            @click.prevent="emit('switch-form', 'reset')"
                         >
                             Forgot your password?
                         </a>
