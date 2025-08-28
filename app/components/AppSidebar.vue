@@ -1,7 +1,7 @@
 <script setup lang="ts">
+
 import { useSupabaseUser } from "#imports"; // or from "@nuxtjs/supabase" if not auto-imported
 import type { SidebarProps } from "@/components/ui/sidebar";
-
 import {
     Cloud,
     Cog,
@@ -15,7 +15,6 @@ import {
     Trophy,
 } from "lucide-vue-next";
 import NavMain from "@/components/NavMain.vue";
-import NavSecondary from "@/components/NavSecondary.vue";
 import NavUser from "@/components/NavUser.vue";
 import {
     Sidebar,
@@ -82,7 +81,7 @@ const data = {
             icon: Cog,
         },
     ],
-};
+};  
 
 const supabaseUser = useSupabaseUser();
 
@@ -91,7 +90,7 @@ const userProfile = computed(() => {
     return {
         name: supabaseUser.value.user_metadata?.display_name || supabaseUser.value.email?.split("@")[0] || "User",
         email: supabaseUser.value.email || "",
-        avatar: supabaseUser.value.user_metadata?.avatar_url || "",
+        avatar: supabaseUser.value.user_metadata?.avatar_url || "/avatars/default-avatar.png",
     };
 });
 </script>
