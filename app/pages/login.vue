@@ -24,6 +24,7 @@ const error = ref<string | null>(null);
 const supabase = useSupabaseClient();
 const router = useRouter();
 
+
 function handleSwitchForm(form: "signup" | "signin" | "reset") {
     showSignup.value = form === "signup";
     showReset.value = form === "reset";
@@ -35,7 +36,7 @@ async function handleSignup() {
     error.value = null;
     loading.value = true;
     // Sign up
-    const { error: signupError } = await supabase.auth.signUp({
+    const { data, error: signupError } = await supabase.auth.signUp({
         email: signupEmail.value,
         password: signupPassword.value,
         options: {
@@ -44,11 +45,18 @@ async function handleSignup() {
             },
         },
     });
-    loading.value = false;
     if (signupError) {
+        loading.value = false;
         error.value = signupError.message;
         return;
     }
+    // Attempt to set initial profile values (may require row level security insert policy)
+    if (data.user) {
+        // Fire and forget – ignore result if fails
+    // @ts-expect-error simplify typing for generic table insert (ensure RLS policy allows this)
+        supabase.from('profiles').upsert({ id: data.user.id, bio: null, onboarding_completed: false }, { onConflict: 'id' });
+    }
+    loading.value = false;
     // Show confirmation page
     router.push("/confirm");
 }
@@ -150,7 +158,7 @@ async function handleReset() {
                 src="/placeholder.svg"
                 alt="Image"
                 class="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-            />
+            >
         </div>
     </div>
 </template>
