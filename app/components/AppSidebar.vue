@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { useSupabaseUser } from "#imports"; // or from "@nuxtjs/supabase" if not auto-imported
+//@ts-nocheck
+import { ref, computed, onMounted, watch } from 'vue'
+import { useSupabaseUser, useSupabaseClient } from '#imports' // or from '@nuxtjs/supabase' if not auto-imported
 import type { SidebarProps } from "@/components/ui/sidebar";
-
 import {
     Cloud,
     Cog,
@@ -15,7 +16,6 @@ import {
     Trophy,
 } from "lucide-vue-next";
 import NavMain from "@/components/NavMain.vue";
-import NavSecondary from "@/components/NavSecondary.vue";
 import NavUser from "@/components/NavUser.vue";
 import {
     Sidebar,
@@ -73,42 +73,56 @@ const data = {
     navSecondary: [
         {
             title: "Support",
-            url: "#",
+            url: "/support",
             icon: MessageCircleMore,
         },
         {
             title: "Settings",
-            url: "#",
+            url: "/settings",
             icon: Cog,
         },
     ],
-    projects: [
-        {
-            name: "Design Engineering",
-            url: "#",
-            icon: Frame,
-        },
-        {
-            name: "Sales & Marketing",
-            url: "#",
-            icon: PieChart,
-        },
-        {
-            name: "Travel",
-            url: "#",
-            icon: Map,
-        },
-    ],
-};
+};  
 
 const supabaseUser = useSupabaseUser();
+const supabase = useSupabaseClient();
+
+const avatar = ref<string>(supabaseUser.value?.user_metadata?.avatar_url || '/avatars/default-avatar.png')
+
+async function loadAvatar() {
+    if (!supabaseUser.value?.id) {
+        avatar.value = supabaseUser.value?.user_metadata?.avatar_url || '/avatars/default-avatar.png'
+        return
+    }
+    try {
+        const { data, error } = await supabase.from('profiles').select('avatar_url').eq('id', supabaseUser.value.id).single()
+        if (error) {
+            avatar.value = supabaseUser.value?.user_metadata?.avatar_url || '/avatars/default-avatar.png'
+        } else if (data && data.avatar_url) {
+            avatar.value = data.avatar_url + '?t=' + Date.now()
+        } else {
+            avatar.value = supabaseUser.value?.user_metadata?.avatar_url || '/avatars/default-avatar.png'
+        }
+    } catch (e) {
+        console.error('Failed to load profile avatar for sidebar:', e)
+        avatar.value = supabaseUser.value?.user_metadata?.avatar_url || '/avatars/default-avatar.png'
+    }
+}
+
+onMounted(() => {
+    loadAvatar()
+})
+
+watch(() => supabaseUser.value && supabaseUser.value.id, (id) => {
+    if (id) loadAvatar()
+})
 
 const userProfile = computed(() => {
     if (!supabaseUser.value) return null;
     return {
         name: supabaseUser.value.user_metadata?.display_name || supabaseUser.value.email?.split("@")[0] || "User",
         email: supabaseUser.value.email || "",
-        avatar: supabaseUser.value.user_metadata?.avatar_url || "",
+        avatar: avatar.value || '/avatars/default-avatar.png',
     };
 });
 </script>
