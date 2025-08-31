@@ -14,7 +14,7 @@
             <img
               :src="avatarUrl || defaultAvatar"
               alt="Profile Image"
-              class="w-32 h-32 rounded-full object-cover border-4 border-primary shadow-[0_4px_24px_rgba(0,0,0,0.7)] mb-4 transition-all duration-300"
+              class="w-32 h-32 rounded-full object-cover border-4 shadow-[0_4px_24px_rgba(0,0,0,0.7)] mb-4 transition-all duration-300"
             />
             <label class="shad-btn shad-btn-primary cursor-pointer px-6 py-2 font-semibold">
               Change Image
@@ -147,20 +147,25 @@ onMounted(async () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('avatar_url, name')
+        .select('avatar_url')
         .eq('id', user.value.id)
         .single()
       if (error) {
         console.error('Error fetching profile:', error)
       }
       if (data) {
-        profile.value.name = data.name || ''
-        profile.value.email = user.value.email
+  // profile name is stored in auth user metadata (display_name). Use that as editable name.
+  profile.value.name = user.value?.user_metadata?.display_name || ''
+  profile.value.email = user.value.email
         profile.value.avatar_url = data.avatar_url
         // Fallback to default avatar if not set or broken
-        avatarUrl.value = data.avatar_url || defaultAvatar
+        if (data.avatar_url) {
+          avatarUrl.value = data.avatar_url + '?t=' + Date.now()
+        } else {
+          avatarUrl.value = defaultAvatar
+        }
       } else {
-        avatarUrl.value = defaultAvatar
+  avatarUrl.value = defaultAvatar
       }
     } catch (err) {
       console.error('Exception in onMounted profile fetch:', err)
@@ -213,6 +218,7 @@ async function onAvatarChange(e) {
       avatarUrl.value = defaultAvatar
     } else {
       profile.value.avatar_url = urlData.publicUrl
+      avatarUrl.value = urlData.publicUrl + '?t=' + Date.now()
     }
   } catch (err) {
     alert('Unexpected error during image upload.')
@@ -224,15 +230,24 @@ async function onAvatarChange(e) {
 }
 async function saveProfile() {
   saving.value = true
-  await supabase
-    .from('profiles')
-    .update({ name: profile.value.name, avatar_url: profile.value.avatar_url })
-    .eq('id', user.value.id)
-  saving.value = false
-  // Optionally, emit an event or use a global store to update avatar elsewhere (e.g., AppSidebar)
+  try {
+    // Update auth user metadata (display_name) so other places using user_metadata reflect the change
+    try {
+      const { data: userData, error: userUpdateError } = await supabase.auth.updateUser({ data: { display_name: profile.value.name } })
+      if (userUpdateError) console.error('Failed to update auth user metadata:', userUpdateError)
+    } catch (e) {
+      console.error('Exception updating auth user metadata:', e)
+    }
+
+    // Update profile record with avatar_url only (profiles table does not have a 'name' column)
+    const { error: updateError } = await supabase.from('profiles').update({ avatar_url: profile.value.avatar_url }).eq('id', user.value.id)
+    if (updateError) console.error('Failed to update profiles avatar_url:', updateError)
+  } finally {
+    saving.value = false
+  }
+  // Optionally, emit an event or use a global store to update avatar/display name elsewhere (e.g., AppSidebar)
 }
 </script>
-
 <style>
 /* Use shadcn and Tailwind utility classes for styling */
 .border-primary {
