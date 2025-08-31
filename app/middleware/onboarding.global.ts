@@ -1,4 +1,6 @@
-// Redirect a logged in user to onboarding until they complete it.
+/*
+ * Redirect a logged in user to "/onboarding" until they complete it
+ */
 export default defineNuxtRouteMiddleware(async (to) => {
   // Allow public routes without user or during auth flows
   const supabaseUser = useSupabaseUser();
@@ -8,6 +10,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const allow = new Set(['/onboarding', '/login', '/confirm']);
   if (allow.has(to.path)) return;
 
+  // Check if onboarding is complete
   const supabase = useSupabaseClient();
   const { data, error } = await supabase
     .from('profiles')
