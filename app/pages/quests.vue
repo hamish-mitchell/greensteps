@@ -12,7 +12,12 @@ import Badge from '~/components/ui/badge/Badge.vue'
 import Progress from '~/components/ui/progress/Progress.vue'
 
 const activeTab = ref<'active' | 'new' | 'completed'>('active')
-const { active, discover, completed, loading, error, enroll } = useQuests()
+const { active, discover, completed, loading, error, enroll, incrementProgress, cancelQuest } = useQuests()
+// Limit of active quests
+const MAX_ACTIVE = 3
+const canStartMore = computed(() => active.value.length < MAX_ACTIVE)
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction, AlertDialogTrigger } from '~/components/ui/alert-dialog'
+const confirmCancelId = ref<number | null>(null)
 
 // Choose a featured quest (prioritise active, else discover)
 const featuredQuest = computed(() => {
@@ -55,6 +60,8 @@ function isUserQuest(q: any): boolean {
 }
 
 async function startQuest(q: any) {
+	// Prevent starting more than the maximum allowed active quests
+	if (!canStartMore.value) return
 	if (!isUserQuest(q)) {
 		await enroll(q.id)
 		activeTab.value = 'active'
@@ -94,6 +101,8 @@ function tabClass(tab: typeof activeTab.value) {
 						<button :class="tabClass('new')" @click="activeTab='new'">New ({{ discover.length }})</button>
 						<button :class="tabClass('completed')" @click="activeTab='completed'">Completed ({{ completed.length }})</button>
 					</div>
+					<!-- Limit notice -->
+					<div v-if="!canStartMore" class="text-xs text-yellow-600">Maximum of {{ MAX_ACTIVE }} active quests reached. Complete or cancel one to start another.</div>
 
 					<!-- Quest Cards -->
 					<div v-if="filteredQuests.length" class="space-y-4" :aria-busy="loading">
@@ -113,9 +122,28 @@ function tabClass(tab: typeof activeTab.value) {
 							</div>
 							<div class="flex items-center gap-2">
 								<Progress :model-value="percent(q)" class="flex-1" />
-								<Button v-if="!isUserQuest(q)" size="sm" @click="startQuest(q)">Start</Button>
-								<Badge v-else-if="(q as any).completed" variant="outline" class="text-[10px]">Completed</Badge>
-								<Badge v-else variant="outline" class="text-[10px]">In Progress</Badge>
+								<Button v-if="!isUserQuest(q)" :disabled="!canStartMore" size="sm" @click="startQuest(q)" :title="canStartMore ? 'Start quest' : `Limit reached: ${MAX_ACTIVE} active quests`">Start</Button>
+								<template v-else>
+									<Badge v-if="(q as any).completed" variant="outline" class="text-[10px]">Completed</Badge>
+									<div v-else class="flex items-center gap-1">
+										<Button size="sm" variant="secondary" class="text-[11px] h-6" @click="incrementProgress(q.id)">+1</Button>
+										<AlertDialog>
+											<AlertDialogTrigger as-child>
+												<Button size="sm" variant="ghost" class="text-[11px] h-6" @click.stop="confirmCancelId = q.id">Cancel</Button>
+											</AlertDialogTrigger>
+											<AlertDialogContent class="max-w-sm">
+												<AlertDialogHeader>
+													<AlertDialogTitle class="text-sm">Cancel this quest?</AlertDialogTitle>
+													<AlertDialogDescription class="text-xs">You'll lose current progress. You can start it again later.</AlertDialogDescription>
+												</AlertDialogHeader>
+												<AlertDialogFooter>
+													<AlertDialogCancel class="text-xs">Keep Quest</AlertDialogCancel>
+													<AlertDialogAction class="text-xs" @click="cancelQuest(confirmCancelId!); confirmCancelId = null">Confirm</AlertDialogAction>
+												</AlertDialogFooter>
+											</AlertDialogContent>
+										</AlertDialog>
+									</div>
+								</template>
 							</div>
 						</Card>
 					</div>
@@ -146,7 +174,7 @@ function tabClass(tab: typeof activeTab.value) {
 							</div>
 							<h3 class="text-sm font-semibold leading-tight">{{ featuredQuest?.data?.name }}</h3>
 							<p class="text-xs text-muted-foreground leading-snug">{{ featuredQuest?.data?.description }}</p>
-							<Button size="sm" class="mt-1" @click="startQuest(featuredQuest?.data)" v-if="featuredQuest?.type==='discover' && featuredQuest?.data">Start Quest</Button>
+							<Button size="sm" class="mt-1" :disabled="!canStartMore" @click="startQuest(featuredQuest?.data)" v-if="featuredQuest?.type==='discover' && featuredQuest?.data" :title="canStartMore ? 'Start quest' : `Limit reached: ${MAX_ACTIVE} active quests`">Start Quest</Button>
 							<Badge v-else variant="outline" class="w-fit text-[10px]">In Progress</Badge>
 						</div>
 					</Card>

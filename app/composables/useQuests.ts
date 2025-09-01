@@ -89,7 +89,54 @@ export function useQuests() {
     }
   }
 
+  async function incrementProgress(userQuestId: number, delta = 1) {
+    if (!user.value) return;
+    // optimistic update
+    const uq = [...active.value];
+    const idx = uq.findIndex(q => q.id === userQuestId);
+    if (idx === -1) return;
+    const target = { ...uq[idx] } as UserQuest; // clone
+    const newProgress = (target.progress ?? 0) + delta;
+    const max = target.max_value ?? null;
+    const isCompleted = max != null && newProgress >= max;
+    target.progress = newProgress;
+    target.completed = isCompleted;
+    target.percent = max ? Math.min(100, Math.round((newProgress / max) * 100)) : 0;
+    if (isCompleted) {
+      // remove from active and push to completed
+      active.value = uq.filter(q => q.id !== userQuestId);
+      completed.value = [...completed.value, target];
+    } else {
+      uq[idx] = target;
+      active.value = uq;
+    }
+    const { error: updErr } = await (supabase as any)
+      .from('user_quests')
+      .update({ progress: newProgress, completed: isCompleted })
+      .eq('id', userQuestId)
+      .eq('user_id', user.value.id);
+    if (updErr) {
+      error.value = updErr.message;
+      // reload to rollback
+      await load();
+    }
+  }
+
+  async function cancelQuest(userQuestId: number) {
+    if (!user.value) return;
+    const { error: delErr } = await supabase
+      .from('user_quests')
+      .delete()
+      .eq('id', userQuestId)
+      .eq('user_id', user.value.id);
+    if (delErr) {
+      error.value = delErr.message;
+    } else {
+      await load();
+    }
+  }
+
   watch(() => user.value?.id, (id) => { if (id) load(); }, { immediate: true });
 
-  return { active, completed, discover, loading, error, reload: load, enroll };
+  return { active, completed, discover, loading, error, reload: load, enroll, incrementProgress, cancelQuest };
 }
