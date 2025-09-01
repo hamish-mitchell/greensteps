@@ -250,7 +250,7 @@ async function saveProfile() {
 </script>
 <style>
 /* Use shadcn and Tailwind utility classes for styling */
-.border-primary {
-  border-color: #2563eb !important; /* Tailwind blue-600 */
+.custom-inset-shadow {
+  box-shadow: inset 0px 0px 24px 6px rgba(0,0,0,0.3);
 }
 </style>

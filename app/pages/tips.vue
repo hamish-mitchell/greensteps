@@ -5,6 +5,7 @@ definePageMeta({
 })
 
 import { ref, computed } from 'vue'
+const supabase = useSupabaseClient()
 
 import Card from '~/components/ui/card/Card.vue'
 import Button from '~/components/ui/button/Button.vue'
@@ -32,50 +33,32 @@ const categories = [
   'Water'
 ]
 
-const articles = ref<Article[]>([
-  {
-    id: 1,
-    title: '10 Simple Ways to Reduce Your Carbon Footprint',
-    category: 'Sustainable Living',
-    excerpt: 'Practical, low-effort actions you can start today to cut emissions at home and on the go.',
-    author: { name: 'Jane Doe' }
-  },
-  {
-    id: 2,
-    title: 'The Ultimate Guide to Eco-Friendly Commuting',
-    category: 'Transport',
-    excerpt: 'Compare bikes, public transit, carpooling and EV options to shrink daily travel impact.',
-    author: { name: 'John Smith' }
-  },
-  {
-    id: 3,
-    title: 'DIY All‑Purpose Cleaners: Non‑Toxic Recipes',
-    category: 'Energy',
-    excerpt: 'Make simple, safe cleaners with pantry ingredients while reducing plastic waste.',
-    author: { name: 'Sandra Dee' }
-  },
-  {
-    id: 4,
-    title: 'A Beginner’s Guide to a Zero‑Waste Kitchen',
-    category: 'Zero-Waste',
-    excerpt: 'Storage hacks, shopping tips, and habits to keep food fresh and bins empty.',
-    author: { name: 'Emily White' }
-  },
-  {
-    id: 5,
-    title: 'The Truth About Fast Fashion',
-    category: 'Consumerism',
-    excerpt: 'Hidden costs of ultra-cheap clothing and smarter wardrobe strategies.',
-    author: { name: 'Sara Chen' }
-  },
-  {
-    id: 6,
-    title: '5 Easy Ways to Save Water at Home',
-    category: 'Water',
-    excerpt: 'Quick fixture tweaks and behavior shifts that cut usage without sacrificing comfort.',
-    author: { name: 'Mark Johnson' }
+const articles = ref<Article[]>([])
+const articlesLoading = ref(false)
+const articlesError = ref<string | null>(null)
+async function loadArticles() {
+  articlesLoading.value = true
+  try {
+    const { data, error } = await supabase
+      .from('articles')
+      .select('id, title, category, excerpt, author_name, author_avatar_url')
+      .order('id', { ascending: false })
+      .limit(50)
+    if (error) throw error
+    articles.value = (data || []).map((r: any) => ({
+      id: r.id,
+      title: r.title,
+      category: r.category,
+      excerpt: r.excerpt,
+      author: { name: r.author_name, avatar: r.author_avatar_url }
+    }))
+  } catch (e: any) {
+    articlesError.value = e.message
+  } finally {
+    articlesLoading.value = false
   }
-])
+}
+loadArticles()
 
 const selectedCategory = ref<string>('All')
 
@@ -119,34 +102,21 @@ function toggleExpand(id: number) {
       <div class="lg:col-span-2 flex flex-col min-h-[60vh]">
         <h2 class="text-sm font-medium text-muted-foreground uppercase mb-2">Latest Articles</h2>
         <!-- Scrollable list -->
-        <div
-          class="space-y-3 overflow-y-auto pr-2 custom-scroll rounded-md"
-          style="max-height: calc(100vh - 250px)"
-          aria-label="Latest articles list"
-        >
-          <Card
-            v-for="a in filteredArticles"
-            :key="a.id"
-            class="p-4 hover:bg-muted/40 transition cursor-pointer"
-            :class="{ 'expanded-card': expandedArticleId === a.id }"
-            @click="toggleExpand(a.id)"
-          >
+        <div class="space-y-3 overflow-y-auto pr-2 custom-scroll rounded-md" style="max-height: calc(100vh - 250px)" aria-label="Latest articles list">
+          <div v-if="articlesLoading" class="text-xs text-muted-foreground">Loading articles...</div>
+          <div v-else-if="articlesError" class="text-xs text-red-500">{{ articlesError }}</div>
+          <div v-else-if="!filteredArticles.length" class="text-xs text-muted-foreground">No articles yet. Seed the 'articles' table.</div>
+          <Card v-for="a in filteredArticles" :key="a.id" class="p-4 hover:bg-muted/40 transition cursor-pointer" :class="{ 'expanded-card': expandedArticleId === a.id }" @click="toggleExpand(a.id)">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
               <div class="flex-1 space-y-1">
                 <div class="flex items-center gap-2">
                   <Badge variant="outline" class="text-xs">{{ a.category }}</Badge>
                 </div>
                 <h3 class="font-semibold leading-snug">{{ a.title }}</h3>
-                <p class="text-sm text-muted-foreground line-clamp-2">
-                  {{ a.excerpt }}
-                </p>
+                <p class="text-sm text-muted-foreground line-clamp-2">{{ a.excerpt }}</p>
                 <transition name="fade">
                   <div v-if="expandedArticleId === a.id" class="mt-2 text-sm text-foreground">
-                    <!-- Expanded content goes here. Replace with real details if available. -->
-                    <p>
-                      More details about <strong>{{ a.title }}</strong> by {{ a.author.name }}.
-                      <!-- Example: You could add a longer excerpt, links, etc. -->
-                    </p>
+                    <p>More details about <strong>{{ a.title }}</strong> by {{ a.author.name }}.</p>
                   </div>
                 </transition>
               </div>

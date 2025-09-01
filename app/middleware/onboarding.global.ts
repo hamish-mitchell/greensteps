@@ -1,21 +1,22 @@
-// Redirect a logged in user to onboarding until they complete it.
+/*
+ * Redirect a logged in user to "/onboarding" until they complete it
+ */
 export default defineNuxtRouteMiddleware(async (to) => {
-  // Allow public routes without user or during auth flows
   const supabaseUser = useSupabaseUser();
-  if (!supabaseUser.value) return;
+  if (!supabaseUser.value) return; // not logged in
 
   // Allowed routes without completion
   const allow = new Set(['/onboarding', '/login', '/confirm']);
   if (allow.has(to.path)) return;
 
-  const supabase = useSupabaseClient();
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('onboarding_completed')
-    .eq('id', supabaseUser.value.id)
-    .single<{ onboarding_completed: boolean }>();
+  const { onboardingCompleted, ensureLoaded } = useOnboardingCompleted();
 
-  if (!error && data && !data.onboarding_completed) {
+  // If unknown, perform (single) fetch. This will only block the *first* guarded navigation.
+  if (onboardingCompleted.value === null) {
+    await ensureLoaded();
+  }
+
+  if (onboardingCompleted.value === false) {
     return navigateTo('/onboarding');
   }
 });
