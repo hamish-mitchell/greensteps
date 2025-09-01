@@ -6,4 +6,3 @@ export default withNuxt([
         ignores: ["app/components/ui/**", ".old/**"],
     },
 ]);
-// Your custom configs here

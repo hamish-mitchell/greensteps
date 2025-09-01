@@ -1,4 +1,6 @@
-// Redirect a logged in user to onboarding until they complete it.
+/*
+ * Redirect a logged in user to "/onboarding" until they complete it
+ */
 export default defineNuxtRouteMiddleware(async (to) => {
   const supabaseUser = useSupabaseUser();
   if (!supabaseUser.value) return; // not logged in
