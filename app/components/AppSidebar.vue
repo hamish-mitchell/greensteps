@@ -13,10 +13,12 @@ import {
     Map,
     MessageCircleMore,
     PieChart,
+    HeartHandshake,
     Trophy,
 } from "lucide-vue-next";
 import NavMain from "@/components/NavMain.vue";
 import NavUser from "@/components/NavUser.vue";
+import { useFriends } from '@/composables/useFriends';
 import {
     Sidebar,
     SidebarContent,
@@ -43,6 +45,12 @@ const data = {
             url: "/dashboard",
             icon: LayoutDashboard,
             isActive: true,
+        },
+        {
+            title: "Friends",
+            url: "/friends",
+            icon: HeartHandshake,
+            items: [],
         },
         {
             title: "Quests",
@@ -86,6 +94,7 @@ const data = {
 
 const supabaseUser = useSupabaseUser();
 const supabase = useSupabaseClient();
+const { pendingCount } = useFriends();
 
 const avatar = ref<string>(supabaseUser.value?.user_metadata?.avatar_url || '/avatars/default-avatar.png')
 
@@ -170,7 +179,7 @@ const userProfile = computed(() => {
             </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
-            <NavMain :items="data.navMain" />
+            <NavMain :items="data.navMain.map(i=> i.title==='Friends' ? { ...i, notification: pendingCount } : i)" />
             <NavSecondary :items="data.navSecondary" class="mt-auto" />
         </SidebarContent>
         <SidebarFooter>

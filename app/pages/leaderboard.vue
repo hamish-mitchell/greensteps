@@ -19,16 +19,14 @@ const scope = ref<'friends' | 'regional' | 'global'>('friends')
 const { scope: lbScope, loading, entries, setScope } = useLeaderboard()
 watch(scope, (s) => setScope(s))
 
-const ranked = computed(() => {
-  return entries.value.map((p, i) => ({
-    id: p.profile_id,
-    name: p.full_name || p.username || 'Anon',
-    avatar: p.avatar_url,
-    points: p.points,
-    rank: i + 1,
-    status: p.scope === 'friends' && p.is_self ? 'You' : undefined
-  }))
-})
+const ranked = computed(() => entries.value.map((p) => ({
+  id: p.id,
+  name: p.display_name || 'Anon',
+  avatar: p.avatar_url,
+  points: p.total_points,
+  rank: p.rank,
+  status: p.you ? 'You' : undefined,
+})))
 const top3 = computed(() => ranked.value.slice(0,3))
 const rest = computed(() => ranked.value.slice(3))
 

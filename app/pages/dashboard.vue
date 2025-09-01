@@ -65,7 +65,6 @@ watch(
 const { badges, loading: badgesLoading, error: badgesError } = useBadges();
 const { entries: leaderboardEntries, loading: leaderboardLoading, error: leaderboardError } = useLeaderboard('global');
 // leaderboardEntries is a ref from useLeaderboard composable
-// @ts-ignore
 const topLeaderboard = computed(() => (leaderboardEntries as any)?.value?.slice(0,5) || []);
 
 // Dashboard summary

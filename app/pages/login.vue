@@ -52,9 +52,9 @@ async function handleSignup() {
     }
     // Attempt to set initial profile values (may require row level security insert policy)
     if (data.user) {
-        // Fire and forget – ignore result if fails
-    // @ts-expect-error simplify typing for generic table insert (ensure RLS policy allows this)
-        supabase.from('profiles').upsert({ id: data.user.id, bio: null, onboarding_completed: false }, { onConflict: 'id' });
+        // Sync display_name into profiles so it is searchable without querying auth.users
+        // @ts-expect-error simplify typing for generic table insert (ensure RLS policy allows this)
+        supabase.from('profiles').upsert({ id: data.user.id, bio: null, onboarding_completed: false, display_name: signupDisplayName.value }, { onConflict: 'id' });
     }
     loading.value = false;
     // Show confirmation page
