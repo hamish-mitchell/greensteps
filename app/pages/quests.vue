@@ -5,82 +5,60 @@ definePageMeta({
 })
 
 import { ref, computed } from 'vue'
+import { useQuests } from '~/composables/useQuests'
 import Card from '~/components/ui/card/Card.vue'
 import Button from '~/components/ui/button/Button.vue'
 import Badge from '~/components/ui/badge/Badge.vue'
 import Progress from '~/components/ui/progress/Progress.vue'
 
-type Quest = {
-	id: number
-	title: string
-	description: string
-	type: 'weekly' | 'monthly' | 'community'
-	goal: number // weeks, km, days etc depending on quest
-	progress: number
-	points: number
-	unit?: string
-	tag?: string
-}
-
 const activeTab = ref<'active' | 'new' | 'completed'>('active')
+const { active, discover, completed, loading, error, enroll } = useQuests()
 
-const quests = ref<Quest[]>([
-	{
-		id: 1,
-		title: 'Meatless Monday',
-		description: 'Skip meat for one day a week. A small change that has a big impact on the environment.',
-		type: 'weekly',
-		goal: 4,
-		progress: 3,
-		points: 150,
-		unit: 'weeks',
-		tag: 'Weekly Challenge'
-	},
-	{
-		id: 2,
-		title: 'Cycle to Work',
-		description: 'Ditch the car and enjoy the fresh air. Track your kilometres and watch your fitness grow.',
-		type: 'monthly',
-		goal: 50,
-		progress: 25,
-		points: 500,
-		unit: 'km',
-		tag: 'Monthly Goal'
-	},
-	{
-		id: 3,
-		title: 'No Single-Use Plastic Week',
-		description: 'Challenge yourself to avoid all single-use plastics for an entire week. Every little bit helps.',
-		type: 'community',
-		goal: 7,
-		progress: 5,
-		points: 200,
-		unit: 'days',
-		tag: 'Community Quest'
-	}
-])
-
-const featuredQuest = ref<Quest>({
-	id: 99,
-	title: 'Community Garden Volunteer',
-	description: 'Join forces with your neighbours to cultivate a local garden. Help grow fresh produce for the community and learn valuable gardening skills.',
-	type: 'community',
-	goal: 6,
-	progress: 0,
-	points: 300,
-	unit: 'hrs',
-	tag: 'Social Impact'
+// Choose a featured quest (prioritise active, else discover)
+const featuredQuest = computed(() => {
+	if (active.value.length) return { type: 'active' as const, data: active.value[0] }
+	if (discover.value.length) return { type: 'discover' as const, data: discover.value[0] }
+	return null
 })
 
 const filteredQuests = computed(() => {
-	if (activeTab.value === 'active') return quests.value
-	if (activeTab.value === 'new') return [] // placeholder
-	return [] // completed placeholder
+	if (activeTab.value === 'active') return active.value
+	if (activeTab.value === 'new') return discover.value
+	return completed.value
 })
 
-function percent(q: Quest) {
-	if (!q.goal) return 0
-	return Math.min(100, (q.progress / q.goal) * 100)
+function percent(q: any) {
+	if (!q?.max_value) return 0
+	if (typeof q.percent === 'number') return q.percent
+	if (q.progress != null && q.max_value) return Math.min(100, Math.round((q.progress / q.max_value) * 100))
+	return 0
+}
+
+function questPoints(q: any) {
+	const max = q?.max_value ?? 0
+	const mult = q?.points_multiplier ?? 0
+	return max * mult
+}
+
+function questCategory(q: any) {
+	return q?.category || 'General'
+}
+
+function progressLabel(q: any) {
+	if (q?.max_value == null) return ''
+	const prog = q.progress ?? 0
+	return `${prog} of ${q.max_value}`
+}
+
+function isUserQuest(q: any): boolean {
+	return q && ('completed' in q || 'progress' in q)
+}
+
+async function startQuest(q: any) {
+	if (!isUserQuest(q)) {
+		await enroll(q.id)
+		activeTab.value = 'active'
+	}
 }
 
 function tabClass(tab: typeof activeTab.value) {
@@ -112,40 +90,44 @@ function tabClass(tab: typeof activeTab.value) {
 				<div class="md:col-span-1 xl:col-span-2 space-y-4 order-1">
 					<!-- Tabs -->
 					<div class="flex items-center gap-2 text-xs font-medium">
-						<button :class="tabClass('active')" @click="activeTab='active'">Active Quests (3)</button>
-						<button :class="tabClass('new')" @click="activeTab='new'">New Quests</button>
-						<button :class="tabClass('completed')" @click="activeTab='completed'">Completed</button>
+						<button :class="tabClass('active')" @click="activeTab='active'">Active ({{ active.length }})</button>
+						<button :class="tabClass('new')" @click="activeTab='new'">New ({{ discover.length }})</button>
+						<button :class="tabClass('completed')" @click="activeTab='completed'">Completed ({{ completed.length }})</button>
 					</div>
 
 					<!-- Quest Cards -->
-					<div v-if="filteredQuests.length" class="space-y-4">
+					<div v-if="filteredQuests.length" class="space-y-4" :aria-busy="loading">
 						<Card v-for="q in filteredQuests" :key="q.id" class="p-4 flex flex-col gap-3">
 							<div class="flex items-start justify-between gap-4">
 								<div class="flex flex-col gap-1">
 									<div class="flex items-center gap-2">
-										<Badge variant="secondary" class="text-[10px] px-2 py-0.5">{{ q.tag }}</Badge>
-										<span class="text-[10px] text-muted-foreground uppercase tracking-wide">+{{ q.points }} pts</span>
+										<Badge variant="secondary" class="text-[10px] px-2 py-0.5">{{ questCategory(q) }}</Badge>
+										<span class="text-[10px] text-muted-foreground uppercase tracking-wide">+{{ questPoints(q) }} pts</span>
 									</div>
-									<h2 class="text-sm font-semibold leading-tight">{{ q.title }}</h2>
+									<h2 class="text-sm font-semibold leading-tight">{{ q.name }}</h2>
 									<p class="text-[11px] text-muted-foreground leading-snug max-w-[680px]">{{ q.description }}</p>
 								</div>
 								<div class="text-[10px] text-muted-foreground whitespace-nowrap">
-									<span v-if="q.unit==='weeks'">{{ q.progress }} of {{ q.goal }} weeks</span>
-									<span v-else>{{ q.progress }} of {{ q.goal }} {{ q.unit }}</span>
+									<span>{{ progressLabel(q) }}</span>
 								</div>
 							</div>
-							<div>
-								<Progress :model-value="percent(q)" />
+							<div class="flex items-center gap-2">
+								<Progress :model-value="percent(q)" class="flex-1" />
+								<Button v-if="!isUserQuest(q)" size="sm" @click="startQuest(q)">Start</Button>
+								<Badge v-else-if="(q as any).completed" variant="outline" class="text-[10px]">Completed</Badge>
+								<Badge v-else variant="outline" class="text-[10px]">In Progress</Badge>
 							</div>
 						</Card>
 					</div>
 					<div v-else class="text-xs text-muted-foreground border rounded-md p-6 text-center">
-						Nothing to show here yet.
+						<span v-if="loading">Loading quests...</span>
+						<span v-else-if="error">{{ error }}</span>
+						<span v-else>Nothing to show here yet.</span>
 					</div>
 				</div>
 
 				<!-- Featured Quest -->
-				<div class="order-2 space-y-4">
+				<div class="order-2 space-y-4" v-if="featuredQuest">
 					<Card class="p-0 overflow-hidden flex flex-col border">
 						<div class="flex items-center justify-between px-4 pt-4">
 							<div class="flex items-center gap-1 text-xs font-medium text-yellow-600">
@@ -159,12 +141,13 @@ function tabClass(tab: typeof activeTab.value) {
 						</div>
 						<div class="p-4 flex flex-col gap-3">
 							<div class="flex items-center gap-2">
-								<Badge variant="outline" class="text-[10px] px-2 py-0.5">{{ featuredQuest.tag }}</Badge>
-								<Badge variant="secondary" class="text-[10px] px-2 py-0.5">+{{ featuredQuest.points }} pts</Badge>
+								<Badge variant="outline" class="text-[10px] px-2 py-0.5">{{ questCategory(featuredQuest.data) }}</Badge>
+								<Badge variant="secondary" class="text-[10px] px-2 py-0.5">+{{ questPoints(featuredQuest.data) }} pts</Badge>
 							</div>
-							<h3 class="text-sm font-semibold leading-tight">{{ featuredQuest.title }}</h3>
-							<p class="text-xs text-muted-foreground leading-snug">{{ featuredQuest.description }}</p>
-							<Button size="sm" class="mt-1">Start Quest</Button>
+							<h3 class="text-sm font-semibold leading-tight">{{ featuredQuest?.data?.name }}</h3>
+							<p class="text-xs text-muted-foreground leading-snug">{{ featuredQuest?.data?.description }}</p>
+							<Button size="sm" class="mt-1" @click="startQuest(featuredQuest?.data)" v-if="featuredQuest?.type==='discover' && featuredQuest?.data">Start Quest</Button>
+							<Badge v-else variant="outline" class="w-fit text-[10px]">In Progress</Badge>
 						</div>
 					</Card>
 				</div>

@@ -4,7 +4,8 @@ definePageMeta({
   tagline: "See how you stack up against the competition."
 })
 
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { useLeaderboard } from '~/composables/useLeaderboard'
 
 import Card from '~/components/ui/card/Card.vue'
 import Button from '~/components/ui/button/Button.vue'
@@ -14,54 +15,25 @@ import AvatarImage from '~/components/ui/avatar/AvatarImage.vue'
 import AvatarFallback from '~/components/ui/avatar/AvatarFallback.vue'
 import Separator from '~/components/ui/separator/Separator.vue'
 
-type Player = {
-  id: number
-  name: string
-  avatar?: string
-  points: number
-  rank?: number
-  status?: string // e.g. "You"
-}
+const scope = ref<'friends' | 'regional' | 'global'>('friends')
+const { scope: lbScope, loading, entries, setScope } = useLeaderboard()
+watch(scope, (s) => setScope(s))
 
-type Scope = 'friends' | 'regional' | 'global'
-const scope = ref<Scope>('friends')
-
-const basePlayers: Player[] = [
-  { id: 1, name: 'Jane Doe', points: 18340 },
-  { id: 2, name: 'John Doe', points: 12425, status: 'You' },
-  { id: 3, name: 'Alex Smith', points: 10250 },
-  { id: 4, name: 'Emily White', points: 9875 },
-  { id: 5, name: 'Chris Lee', points: 9450 },
-  { id: 6, name: 'Sarah Chen', points: 9100 },
-  { id: 7, name: 'David Kim', points: 8800 },
-  { id: 8, name: 'Lisa Wong', points: 8720 },
-  { id: 9, name: 'Brian Smith', points: 8590 },
-  { id:10, name: 'Nancy Green', points: 8225 }
-]
-
-const leaderboards: Record<Scope, Player[]> = {
-  friends: basePlayers,
-  regional: basePlayers.map(p => ({ ...p, points: Math.round(p.points * 1.1) })),
-  global: basePlayers.map(p => ({ ...p, points: Math.round(p.points * 1.27) }))
-}
-
-const players = computed(() => {
-  const list = [...leaderboards[scope.value]].sort((a,b)=> b.points - a.points)
-  return list.map((p,i)=> ({ ...p, rank: i+1 }))
+const ranked = computed(() => {
+  return entries.value.map((p, i) => ({
+    id: p.profile_id,
+    name: p.full_name || p.username || 'Anon',
+    avatar: p.avatar_url,
+    points: p.points,
+    rank: i + 1,
+    status: p.scope === 'friends' && p.is_self ? 'You' : undefined
+  }))
 })
+const top3 = computed(() => ranked.value.slice(0,3))
+const rest = computed(() => ranked.value.slice(3))
 
-const top3 = computed(() => players.value.slice(0,3))
-const rest = computed(() => players.value.slice(3))
-
-function setScope(s: Scope) { scope.value = s }
-
-function initials(name: string) {
-  return name.split(' ').map(p=>p[0]).join('').slice(0,2)
-}
-
-function formatPts(n: number) {
-  return n.toLocaleString() + ' pts'
-}
+function initials(name: string) { return name.split(' ').map(p=>p[0]).join('').slice(0,2) }
+function formatPts(n: number) { return n.toLocaleString() + ' pts' }
 </script>
 
 <template>

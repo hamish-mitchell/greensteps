@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import AppSidebar from "@/components/AppSidebar.vue";
+// Lazy import sidebar to reduce synchronous work on navigation.
+const AppSidebar = defineAsyncComponent(() => import('@/components/AppSidebar.vue'));
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -22,7 +23,18 @@ const route = useRoute();
 
 <template>
     <SidebarProvider>
-        <AppSidebar />
+        <Suspense>
+            <template #default>
+                <AppSidebar />
+            </template>
+            <template #fallback>
+                <div class="w-[240px] shrink-0 animate-pulse p-4 space-y-4 hidden md:block">
+                    <div class="h-8 bg-muted rounded" />
+                    <div class="h-6 bg-muted rounded w-3/4" />
+                    <div class="h-6 bg-muted rounded w-1/2" />
+                </div>
+            </template>
+        </Suspense>
         <SidebarInset>
             <header
                 class="flex p-4 shrink-0 items-center gap-2 transition-[width,height] ease-out group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b mb-6 border-muted"
@@ -65,7 +77,19 @@ const route = useRoute();
                 </div>
             </header>
             <div class="flex flex-1 flex-col gap-4 p-4 pt-0">
-                <slot />
+                <Suspense>
+                    <template #default>
+                        <slot />
+                    </template>
+                    <template #fallback>
+                        <div class="space-y-4">
+                            <div class="h-8 w-1/3 bg-muted animate-pulse rounded" />
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <div v-for="i in 6" :key="i" class="h-24 bg-muted rounded animate-pulse" />
+                            </div>
+                        </div>
+                    </template>
+                </Suspense>
             </div>
         </SidebarInset>
     </SidebarProvider>

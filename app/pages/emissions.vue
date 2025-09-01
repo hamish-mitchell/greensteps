@@ -4,7 +4,7 @@ definePageMeta({
   tagline: "Track and understand your carbon footprint.",
 })
 
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 
 import Card from '~/components/ui/card/Card.vue'
 import Button from '~/components/ui/button/Button.vue'
@@ -30,36 +30,48 @@ type HistoryItem = {
   type: 'debit' | 'credit'
 }
 
-// Monthly emissions (kg CO2)
-const monthlyEmissions = ref([
-  { label: 'Jan', value: 45 },
-  { label: 'Feb', value: 40 },
-  { label: 'Mar', value: 55 },
-  { label: 'Apr', value: 56 },
-  { label: 'May', value: 41 },
-  { label: 'Jun', value: 39 },
-  { label: 'Jul', value: 30 },
-])
+// Activities fetched from DB
+const history = ref<HistoryItem[]>([])
+const loading = ref(false)
+const loadError = ref<string|null>(null)
 
-// Category breakdown (%)
-const categoryBreakdown = ref([
-  { label: 'Transport', value: 45, color: '#0ea5e9' },
-  { label: 'Recycling', value: 25, color: '#10b981' },
-  { label: 'Energy', value: 20, color: '#f59e0b' },
-  { label: 'Food', value: 10, color: '#6366f1' },
-])
+const supabase = useSupabaseClient()
+const user = useSupabaseUser()
 
-const history = ref<HistoryItem[]>([
-  { id: 1, activity: 'Drove to work (15km)', category: 'Transport', date: 'July 29, 2025', impactKg: 5.2, type: 'debit' },
-  { id: 2, activity: 'Meatless Monday', category: 'Food', date: 'July 28, 2025', impactKg: -1.8, type: 'credit' },
-  { id: 3, activity: 'Recycled 5 plastic bottles', category: 'Recycling', date: 'July 28, 2025', impactKg: -0.5, type: 'credit' },
-  { id: 4, activity: 'Used AC for 4 hours', category: 'Energy', date: 'July 27, 2025', impactKg: 2.1, type: 'debit' },
-  { id: 5, activity: 'Cycled to shops (5km)', category: 'Transport', date: 'July 20, 2025', impactKg: -1.5, type: 'credit' },
-])
+interface ActivityRow { id: string; type: string; category: string; emission_kg: number; created_at: string; quantity: number; unit: string }
+
+async function loadActivities() {
+  if (!user.value) return
+  loading.value = true
+  loadError.value = null
+  const { data, error } = await supabase
+    .from('activities')
+    .select('id, type, category, emission_kg, created_at, quantity, unit')
+    .order('created_at', { ascending: false })
+    .limit(250)
+  if (error) {
+    loadError.value = error.message
+  } else if (data) {
+    const rows = data as ActivityRow[]
+    history.value = rows.map((a, idx) => ({
+      id: idx + 1,
+      activity: `${a.type} ${a.quantity ? '(' + a.quantity + ' ' + a.unit + ')' : ''}`.trim(),
+      category: capitalise(a.category),
+      date: new Date(a.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
+      impactKg: a.emission_kg,
+      type: a.emission_kg >= 0 ? 'debit' : 'credit'
+    }))
+    rebuildCharts()
+  }
+  loading.value = false
+}
+
+watch(() => user.value?.id, (id) => { if (id) loadActivities() }, { immediate: true })
+
+function capitalise(s: string) { return s.charAt(0).toUpperCase() + s.slice(1) }
 
 const totalEmissionsYTD = computed(() =>
-  history.value.filter(h => h.type === 'debit').reduce((s, i) => s + i.impactKg, 0) +
-  history.value.filter(h => h.type === 'credit').reduce((s, i) => s + i.impactKg, 0)
+  history.value.reduce((s, i) => s + i.impactKg, 0)
 )
 const avgDailyFootprint = computed(() => (totalEmissionsYTD.value / 210).toFixed(1))
 const bestCategory = computed(() => 'Recycling')
@@ -83,6 +95,36 @@ function impactClass(v: number) {
   return v > 0 ? 'text-red-500' : 'text-emerald-600'
 }
 
+// Derived datasets for charts
+const monthlyEmissions = computed(() => {
+  // group by YYYY-MM from history
+  const buckets: Record<string, number> = {}
+  history.value.forEach(h => {
+    const d = new Date(h.date)
+    const key = `${d.getFullYear()}-${d.getMonth()+1}`
+    buckets[key] = (buckets[key] || 0) + h.impactKg
+  })
+  // sort chronologically, take last 7
+  const entries = Object.entries(buckets).sort((a,b)=> new Date(a[0]).getTime() - new Date(b[0]).getTime()).slice(-7)
+  return entries.map(([k,v]) => {
+    const [y,m] = k.split('-')
+    const date = new Date(Number(y), Number(m)-1, 1)
+    return { label: date.toLocaleString(undefined,{ month:'short'}), value: Math.round(v*100)/100 }
+  })
+})
+
+const categoryBreakdown = computed(() => {
+  const total = history.value.reduce((s,i)=> s + Math.abs(i.impactKg), 0) || 1
+  const bucket: Record<string, number> = {}
+  history.value.forEach(h => {
+    bucket[h.category] = (bucket[h.category] || 0) + Math.abs(h.impactKg)
+  })
+  const palette = ['#0ea5e9','#10b981','#f59e0b','#6366f1','#ec4899','#84cc16']
+  return Object.entries(bucket)
+    .sort((a,b)=> b[1]-a[1])
+    .map(([label,val],i)=> ({ label, value: Math.round(val/total*100), color: palette[i % palette.length] }))
+})
+
 // ---- Chart.js Integration ----
 const barCanvas = ref<HTMLCanvasElement | null>(null)
 const donutCanvas = ref<HTMLCanvasElement | null>(null)
@@ -93,17 +135,10 @@ let barChart: ChartType | null = null
 let donutChart: ChartType | null = null
 
 onMounted(async () => {
-  // Ensure dependency installed: npm i chart.js
-  // Dynamic import so SSR is safe
   const mod = await import('chart.js/auto')
-  // chart.js/auto default export is the Chart constructor
   ChartLib = mod.default
-  if (!ChartLib) {
-    console.error('Chart.js failed to load')
-    return
-  }
-  buildBarChart()
-  buildDonutChart()
+  if (!ChartLib) return
+  rebuildCharts()
 })
 
 onBeforeUnmount(() => {
@@ -179,6 +214,14 @@ function buildDonutChart() {
     }
   })
 }
+
+function rebuildCharts() {
+  buildBarChart();
+  buildDonutChart();
+}
+
+watch(monthlyEmissions, () => rebuildCharts())
+watch(categoryBreakdown, () => rebuildCharts())
 
 function getCssVar(name: string, fallback: string) {
   if (typeof window === 'undefined') return fallback

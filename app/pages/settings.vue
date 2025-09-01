@@ -11,11 +11,13 @@
         <!-- Profile Image Section -->
         <div class="bg-white dark:bg-gray-900 rounded-lg shadow p-8 mb-8 flex flex-col md:flex-row items-center md:items-start gap-8 w-full">
           <div class="flex flex-col items-center">
-            <img
-              :src="avatarUrl || defaultAvatar"
-              alt="Profile Image"
-              class="w-32 h-32 rounded-full object-cover border-4 border-primary shadow-[0_4px_24px_rgba(0,0,0,0.7)] mb-4 transition-all duration-300"
-            />
+            <div class="custom-inset-shadow rounded-full mb-4 transition-all duration-300 p-1" style="display: inline-block;">
+              <img
+                :src="avatarUrl || defaultAvatar"
+                alt="Profile Image"
+                class="w-32 h-32 rounded-full object-cover"
+              />
+            </div>
             <label class="shad-btn shad-btn-primary cursor-pointer px-6 py-2 font-semibold">
               Change Image
               <input type="file" accept="image/*" class="hidden" @change="onAvatarChange" />
@@ -235,7 +237,7 @@ async function saveProfile() {
 
 <style>
 /* Use shadcn and Tailwind utility classes for styling */
-.border-primary {
-  border-color: #2563eb !important; /* Tailwind blue-600 */
+.custom-inset-shadow {
+  box-shadow: inset 0px 0px 24px 6px rgba(0,0,0,0.3);
 }
 </style>
