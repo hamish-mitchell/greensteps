@@ -179,7 +179,7 @@ async function handleSaveActivity(payload: any) {
                                     </ol>
                                     <div v-else class="text-xs text-muted-foreground">No data yet.</div>
                                 </div>
-                        </div> ``
+                        </div>
         </div>
 
         <!-- Badges row -->
