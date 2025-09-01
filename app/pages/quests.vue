@@ -4,7 +4,7 @@ definePageMeta({
 	tagline: 'Complete challenges, earn points, and make a difference.'
 })
 
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useQuests } from '~/composables/useQuests'
 import Card from '~/components/ui/card/Card.vue'
 import Button from '~/components/ui/button/Button.vue'
@@ -18,6 +18,46 @@ const MAX_ACTIVE = 3
 const canStartMore = computed(() => active.value.length < MAX_ACTIVE)
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction, AlertDialogTrigger } from '~/components/ui/alert-dialog'
 const confirmCancelId = ref<number | null>(null)
+
+// Confetti on quest completion
+let stopListener: (() => void) | null = null
+onMounted(async () => {
+	// Lazy import to keep SSR safe and reduce bundle size on initial load
+	// @ts-ignore - types provided via local ambient or fallback to any
+	const [{ useEventBus }, confettiMod] = await Promise.all([
+		import('@vueuse/core'),
+		// @ts-ignore
+		import('canvas-confetti')
+	])
+	const bus = useEventBus<{ quest: any }>('quest:completed')
+	const confetti = confettiMod.default || (confettiMod as any)
+	const fire = () => {
+		const duration = 1800
+		const end = Date.now() + duration
+		const colors = ['#16a34a', '#15803d', '#65a30d', '#bef264', '#86efac']
+		;(function frame() {
+			confetti({
+				particleCount: 3,
+				startVelocity: 35,
+				spread: 55,
+				origin: { x: Math.random() * 0.4 + 0.3, y: 0.2 },
+				colors
+			})
+			if (Date.now() < end) requestAnimationFrame(frame)
+		})()
+		confetti({
+			particleCount: 120,
+			spread: 70,
+			gravity: 0.8,
+			scalar: 0.9,
+			ticks: 250,
+			origin: { y: 0.2 },
+			colors
+		})
+	}
+	stopListener = bus.on(({ quest }) => fire())
+})
+onBeforeUnmount(() => { if (stopListener) stopListener(); })
 
 // Choose a featured quest (prioritise active, else discover)
 const featuredQuest = computed(() => {
