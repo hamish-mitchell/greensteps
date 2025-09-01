@@ -105,19 +105,8 @@ async function handleLogout() {
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
                         <DropdownMenuItem>
-                            <Sparkles />
-                            Upgrade to Pro
-                        </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                        <DropdownMenuItem>
                             <UserRound />
                             Profile
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <CreditCard />
-                            Billing
                         </DropdownMenuItem>
                         <DropdownMenuItem>
                             <Bell />
