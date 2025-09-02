@@ -22,25 +22,31 @@ export default defineEventHandler(async (event) => {
   const supabaseUser = await requireUser(event)
   const supabase = await serverSupabaseClient(event)
 
-  // Collect profile ids based on scope
+  // Collect friend IDs using new schema (user_a, user_b)
+  interface FriendshipRow { user_a: string; user_b: string }
+  const { data: frRows, error: frErr } = await supabase
+    .from('friendships')
+    .select('user_a, user_b')
+    .or(`user_a.eq.${supabaseUser.id},user_b.eq.${supabaseUser.id}`)
+  if (frErr) throw createError({ statusCode: 500, statusMessage: frErr.message })
+  const friendIds = new Set<string>()
+  for (const row of (frRows as FriendshipRow[] | null) || []) {
+    if (row.user_a === supabaseUser.id && row.user_b) friendIds.add(row.user_b)
+    else if (row.user_b === supabaseUser.id && row.user_a) friendIds.add(row.user_a)
+  }
+
   let profiles: RawProfile[] = []
   if (scope === 'friends') {
-    const { data: fr, error: frErr } = await supabase
-      .from('friendships')
-      .select('friend_id')
-      .eq('user_id', supabaseUser.id)
-    if (frErr) throw createError({ statusCode: 500, statusMessage: frErr.message })
-    const friendIds: string[] = (fr || []).map((r: any) => r.friend_id).filter(Boolean)
-    if (!friendIds.includes(supabaseUser.id)) friendIds.push(supabaseUser.id)
-    if (friendIds.length) {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, total_points, avatar_url, display_name, is_private')
-        .in('id', friendIds)
-      if (error) throw createError({ statusCode: 500, statusMessage: error.message })
-      profiles = (data as any[]).filter(p => !p.is_private || p.id === supabaseUser.id)
-    }
-  } else { // global
+    // Always include self
+    const ids = Array.from(friendIds)
+    ids.push(supabaseUser.id)
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, total_points, avatar_url, display_name, is_private')
+      .in('id', ids)
+    if (error) throw createError({ statusCode: 500, statusMessage: error.message })
+    profiles = (data as any[]).filter(p => !p.is_private || p.id === supabaseUser.id)
+  } else {
     const { data, error } = await supabase
       .from('profiles')
       .select('id, total_points, avatar_url, display_name, is_private')
@@ -60,7 +66,8 @@ export default defineEventHandler(async (event) => {
     avatar_url: profile.avatar_url || null,
     total_points: profile.total_points || 0,
     rank: index + 1,
-    you: profile.id === supabaseUser.id
+    you: profile.id === supabaseUser.id,
+    friend: friendIds.has(profile.id) && profile.id !== supabaseUser.id
   }))
 
   return { scope, entries }
