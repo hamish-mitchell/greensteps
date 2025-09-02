@@ -15,20 +15,18 @@ import AvatarImage from '~/components/ui/avatar/AvatarImage.vue'
 import AvatarFallback from '~/components/ui/avatar/AvatarFallback.vue'
 import Separator from '~/components/ui/separator/Separator.vue'
 
-const scope = ref<'friends' | 'regional' | 'global'>('friends')
-const { scope: lbScope, loading, entries, setScope } = useLeaderboard()
-watch(scope, (s) => setScope(s))
+const scope = ref<'friends' | 'global'>('friends')
+const { entries, setScope } = useLeaderboard('friends')
+watch(scope, (s) => setScope(s as any))
 
-const ranked = computed(() => {
-  return entries.value.map((p, i) => ({
-    id: p.profile_id,
-    name: p.full_name || p.username || 'Anon',
-    avatar: p.avatar_url,
-    points: p.points,
-    rank: i + 1,
-    status: p.scope === 'friends' && p.is_self ? 'You' : undefined
-  }))
-})
+const ranked = computed(() => entries.value.map(e => ({
+  id: e.id,
+  name: e.display_name || 'Anon',
+  avatar: e.avatar_url,
+  points: e.total_points,
+  rank: e.rank,
+  status: e.you ? 'You' : (e.friend ? 'Friend' : undefined)
+})))
 const top3 = computed(() => ranked.value.slice(0,3))
 const rest = computed(() => ranked.value.slice(3))
 
@@ -53,21 +51,14 @@ function formatPts(n: number) { return n.toLocaleString() + ' pts' }
         <div class="flex gap-2">
           <Button
             size="sm"
-            variant="outline"
-            :class="scope==='friends' && 'bg-primary text-primary-foreground'"
-            @click="setScope('friends')"
+            :variant="scope==='friends' ? 'default' : 'outline'"
+            @click="scope='friends'"
           >Friends</Button>
-          <Button
-            size="sm"
-            variant="outline"
-            :class="scope==='regional' && 'bg-primary text-primary-foreground'"
-            @click="setScope('regional')"
-          >Regional</Button>
+          <!-- Regional removed; only friends & global per current spec -->
             <Button
             size="sm"
-            variant="outline"
-            :class="scope==='global' && 'bg-primary text-primary-foreground'"
-            @click="setScope('global')"
+            :variant="scope==='global' ? 'default' : 'outline'"
+            @click="scope='global'"
           >Global</Button>
         </div>
       </div>

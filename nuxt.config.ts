@@ -10,7 +10,7 @@ export default defineNuxtConfig({
         plugins: [tailwindcss()], // Tailwind via Vite plugin
     },
 
-    modules: ["@nuxt/eslint", "@nuxtjs/supabase", "shadcn-nuxt", "@nuxt/fonts", "@nuxt/content"], // Supabase + lint integration
+    modules: ["@nuxt/eslint", "@nuxtjs/supabase", "shadcn-nuxt", "@nuxt/fonts",], // Supabase + lint integration
 
     supabase: {
         // Uses env vars (avoid hardcoding)
@@ -23,6 +23,7 @@ export default defineNuxtConfig({
             // Exposed to client; duplication for backward compatibility
             SUPABASE_URL: process.env.SUPABASE_URL,
             SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+            SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY
         },
     },
 
