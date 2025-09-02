@@ -1,11 +1,3 @@
-// Composable for creating activities from the dashboard input sheet via server RPC.
-// Uses add_activity() PostgreSQL function (you must create it) which:
-//  - looks up emission factor by key
-//  - computes emission
-//  - inserts into activities & fires triggers (streak, quests, badges)
-// Returns inserted row.
-
-
 type RawFormPayload = {
   category: string;
   food: null | { subcategory: string; amountKg: number | null };

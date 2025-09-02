@@ -1,5 +1,4 @@
 <script setup lang="ts">
-//@ts-nocheck
 import { ref, computed, onMounted, watch } from 'vue'
 import { useSupabaseUser, useSupabaseClient } from '#imports' // or from '@nuxtjs/supabase' if not auto-imported
 import type { SidebarProps } from "@/components/ui/sidebar";
@@ -16,6 +15,7 @@ import {
 import NavMain from "@/components/NavMain.vue";
 import NavUser from "@/components/NavUser.vue";
 import { useFriends } from '@/composables/useFriends';
+import { useQuests } from '@/composables/useQuests';
 import {
     Sidebar,
     SidebarContent,
@@ -92,6 +92,8 @@ const data = {
 const supabaseUser = useSupabaseUser();
 const supabase = useSupabaseClient();
 const { pendingCount } = useFriends();
+const { active } = useQuests();
+const activeQuestCount = computed(() => active.value.length);
 
 const avatar = ref<string>(supabaseUser.value?.user_metadata?.avatar_url || '/avatars/default-avatar.png')
 
@@ -101,7 +103,11 @@ async function loadAvatar() {
         return
     }
     try {
-        const { data, error } = await supabase.from('profiles').select('avatar_url').eq('id', supabaseUser.value.id).single()
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('avatar_url')
+            .eq('id', supabaseUser.value.id)
+            .single<{ avatar_url: string | null }>();
         if (error) {
             avatar.value = supabaseUser.value?.user_metadata?.avatar_url || '/avatars/default-avatar.png'
         } else if (data && data.avatar_url) {
@@ -176,7 +182,7 @@ const userProfile = computed(() => {
             </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
-            <NavMain :items="data.navMain.map(i=> i.title==='Friends' ? { ...i, notification: pendingCount } : i)" />
+            <NavMain :items="data.navMain.map(i=> i.title==='Friends' ? { ...i, notification: pendingCount } : i.title==='Quests' ? { ...i, notification: activeQuestCount } : i)" />
             <NavSecondary :items="data.navSecondary" class="mt-auto" />
         </SidebarContent>
         <SidebarFooter>

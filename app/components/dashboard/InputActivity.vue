@@ -38,7 +38,7 @@ const form = reactive({
     category: '' as Category | '',
     foodSubcategory: '' as FoodSub | '',
     transportMode: '' as TransportMode | '',
-    amountKg: null as number | null,          // Food amount
+    amountKg: null as number | null,
     durationHours: 0,
     durationMinutes: 0,
     electricityKWh: null as number | null,
@@ -71,7 +71,15 @@ const canSave = computed(() => {
     return false;
 });
 
-const emit = defineEmits<{ (e: 'save', payload: any): void }>();
+type ActivityPayload = {
+    category: Category | '';
+    food: { subcategory: FoodSub | ''; amountKg: number | null } | null;
+    transport: { mode: TransportMode | ''; durationHours: number; durationMinutes: number; totalMinutes: number } | null;
+    electricity: { kWh: number | null } | null;
+    waste: { amountKg: number | null } | null;
+};
+
+const emit = defineEmits<{ (e: 'save', payload: ActivityPayload): void }>();
 
 function onSave() {
     if (!canSave.value) return;
@@ -160,10 +168,10 @@ function onSave() {
                         >
                         <Input
                             id="foodKg"
+                            v-model.number="form.amountKg as number"
                             type="number"
                             min="0"
                             step="0.01"
-                            v-model.number="form.amountKg"
                             placeholder="e.g. 0.45"
                         />
                     </div>
@@ -196,9 +204,9 @@ function onSave() {
                             >
                             <Input
                                 id="hrs"
+                                v-model.number="form.durationHours"
                                 type="number"
                                 min="0"
-                                v-model.number="form.durationHours"
                                 placeholder="0"
                             />
                         </div>
@@ -208,10 +216,10 @@ function onSave() {
                             >
                             <Input
                                 id="mins"
+                                v-model.number="form.durationMinutes"
                                 type="number"
                                 min="0"
                                 max="59"
-                                v-model.number="form.durationMinutes"
                                 placeholder="0"
                             />
                         </div>
@@ -225,10 +233,10 @@ function onSave() {
                     >
                     <Input
                         id="kwh"
+                        v-model.number="form.electricityKWh as number"
                         type="number"
                         min="0"
                         step="0.01"
-                        v-model.number="form.electricityKWh"
                         placeholder="e.g. 12.5"
                     />
                 </div>
@@ -240,10 +248,10 @@ function onSave() {
                     >
                     <Input
                         id="wasteKg"
+                        v-model.number="form.wasteKg as number"
                         type="number"
                         min="0"
                         step="0.01"
-                        v-model.number="form.wasteKg"
                         placeholder="e.g. 1.2"
                     />
                 </div>
@@ -275,8 +283,8 @@ function onSave() {
                     <Button
                         type="button"
                         :disabled="!canSave"
-                        @click="onSave"
                         class="w-full"
+                        @click="onSave"
                     >
                         Save Activity
                     </Button>

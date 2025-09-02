@@ -15,10 +15,10 @@
               :src="avatarUrl || defaultAvatar"
               alt="Profile Image"
               class="w-32 h-32 rounded-full object-cover border-4 shadow-[0_4px_24px_rgba(0,0,0,0.7)] mb-4 transition-all duration-300"
-            />
+            >
             <label class="shad-btn shad-btn-primary cursor-pointer px-6 py-2 font-semibold">
               Change Image
-              <input type="file" accept="image/*" class="hidden" @change="onAvatarChange" />
+              <input type="file" accept="image/*" class="hidden" @change="onAvatarChange" >
             </label>
             <p v-if="uploading" class="text-sm text-gray-500 mt-2">Uploading...</p>
           </div>
@@ -39,22 +39,22 @@
               <label class="block text-sm font-medium mb-1" for="name">Name</label>
               <input
                 id="name"
+                v-model="profile.name"
                 type="text"
                 class="shad-input w-full"
                 placeholder="Your name"
-                v-model="profile.name"
-              />
+              >
             </div>
             <div>
               <label class="block text-sm font-medium mb-1" for="email">Email</label>
               <input
                 id="email"
+                v-model="profile.email"
                 type="email"
                 class="shad-input w-full"
                 placeholder="you@example.com"
-                v-model="profile.email"
                 disabled
-              />
+              >
             </div>
             <div>
               <button type="submit" class="shad-btn shad-btn-primary shadow-lg border-2 border-primary" :disabled="saving">
@@ -75,7 +75,7 @@
                 type="password"
                 class="shad-input w-full"
                 placeholder="Current password"
-              />
+              >
             </div>
             <div>
               <label class="block text-sm font-medium mb-1" for="new-password">New Password</label>
@@ -84,7 +84,7 @@
                 type="password"
                 class="shad-input w-full"
                 placeholder="New password"
-              />
+              >
             </div>
             <div>
               <label class="block text-sm font-medium mb-1" for="confirm-password">Confirm New Password</label>
@@ -93,7 +93,7 @@
                 type="password"
                 class="shad-input w-full"
                 placeholder="Confirm new password"
-              />
+              >
             </div>
             <div>
               <button type="button" class="shad-btn shad-btn-primary shadow-lg border-2 border-primary">
@@ -122,7 +122,6 @@
 </template>
 
 <script setup>
-//@ts-nocheck
 import { ref, onMounted } from 'vue'
 import AppSidebar from '~/components/AppSidebar.vue'
 import appShell from '~/layouts/app-shell.vue'

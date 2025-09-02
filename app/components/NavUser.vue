@@ -2,9 +2,7 @@
 import {
     Bell,
     ChevronsUpDown,
-    CreditCard,
     LogOut,
-    Sparkles,
     UserRound,
 } from "lucide-vue-next";
 
