@@ -54,7 +54,6 @@ function formatPts(n: number) { return n.toLocaleString() + ' pts' }
             :variant="scope==='friends' ? 'default' : 'outline'"
             @click="scope='friends'"
           >Friends</Button>
-          <!-- Regional removed; only friends & global per current spec -->
             <Button
             size="sm"
             :variant="scope==='global' ? 'default' : 'outline'"
