@@ -231,17 +231,17 @@ async function onAvatarChange(e) {
 async function saveProfile() {
   saving.value = true
   try {
-    // Update auth user metadata (display_name) so other places using user_metadata reflect the change
+    // Update auth user metadata (display_name)
     try {
-      const { data: userData, error: userUpdateError } = await supabase.auth.updateUser({ data: { display_name: profile.value.name } })
+      const { error: userUpdateError } = await supabase.auth.updateUser({ data: { display_name: profile.value.name } })
       if (userUpdateError) console.error('Failed to update auth user metadata:', userUpdateError)
     } catch (e) {
       console.error('Exception updating auth user metadata:', e)
     }
 
-    // Update profile record with avatar_url only (profiles table does not have a 'name' column)
-    const { error: updateError } = await supabase.from('profiles').update({ avatar_url: profile.value.avatar_url }).eq('id', user.value.id)
-    if (updateError) console.error('Failed to update profiles avatar_url:', updateError)
+    // Persist display_name into profiles for friend search (ensure column exists)
+    const { error: updateError } = await supabase.from('profiles').update({ avatar_url: profile.value.avatar_url, display_name: profile.value.name }).eq('id', user.value.id)
+    if (updateError) console.error('Failed to update profiles record:', updateError)
   } finally {
     saving.value = false
   }
