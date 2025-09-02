@@ -7,12 +7,9 @@ import {
     Cloud,
     Cog,
     Compass,
-    Frame,
     LayoutDashboard,
     Lightbulb,
-    Map,
     MessageCircleMore,
-    PieChart,
     HeartHandshake,
     Trophy,
 } from "lucide-vue-next";
