@@ -16,6 +16,12 @@ export default defineNuxtConfig({
         // Uses env vars (avoid hardcoding)
         url: process.env.SUPABASE_URL,
         key: process.env.SUPABASE_ANON_KEY,
+
+        redirectOptions: {
+            login: '/login',
+            callback: '/confirm',
+            exclude: ['/reset-password']
+        }
     },
 
     runtimeConfig: {
@@ -39,4 +45,6 @@ export default defineNuxtConfig({
             styles: ["normal", "italic"],
         },
     },
+
+    
 });

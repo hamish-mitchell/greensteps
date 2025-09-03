@@ -8,6 +8,11 @@
 const supabase = useSupabaseClient();
 const router = useRouter();
 
+// Attach route-specific middleware (defined in app/middleware/reset-password.ts)
+definePageMeta({
+  middleware: ['reset-password']
+});
+
 // Form state
 const password = ref("");
 const confirmPassword = ref("");
@@ -17,6 +22,9 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 const success = ref(false);
 const sessionReady = ref(false);
+// Debug state (visible on localhost or when ?debug=true)
+const debug = ref(false);
+const debugInfo = ref({ href: '', code: null as string | null, token: null as string | null, token_type: null as string | null, hash: '', branch: '' });
 
 function parseHashParams() {
   const hash = window.location.hash.startsWith('#') ? window.location.hash.substring(1) : window.location.hash;
@@ -36,13 +44,50 @@ async function establishSession() {
     return;
   }
 
+  // 0. Newer pattern: token + token_type=recovery (+ optional email)
+  try {
+    const url0 = new URL(window.location.href);
+    const token = url0.searchParams.get('token');
+    const tokenType = url0.searchParams.get('token_type');
+    const email = url0.searchParams.get('email');
+    if (token && tokenType === 'recovery') {
+      // Attempt verifyOtp if email present (required by supabase)
+      if (email) {
+        const { data, error: verifyErr } = await supabase.auth.verifyOtp({ type: 'recovery', token, email });
+        if (!verifyErr && data.session) {
+          if (debug.value) {
+            debugInfo.value.token = token;
+            debugInfo.value.token_type = tokenType;
+            debugInfo.value.branch = 'verifyOtp';
+            console.debug('[reset-password] verifyOtp success', { token, email, data });
+          }
+          sessionReady.value = true;
+          // Clean sensitive params
+          ['token','token_type','email'].forEach(p=>url0.searchParams.delete(p));
+          history.replaceState(null, document.title, url0.pathname + url0.search + url0.hash);
+          return;
+        }
+        if (debug.value) console.debug('[reset-password] verifyOtp failed', verifyErr);
+      }
+      // If no email, fall through to other mechanisms
+    }
+  } catch (e) {
+    // ignore parse errors
+  }
+
   // Prefer code exchange if present (newer flow)
   const url = new URL(window.location.href);
   const code = url.searchParams.get('code');
   const type = url.searchParams.get('type');
   if (code && (!type || type === 'recovery')) {
+    if (debug.value) {
+      debugInfo.value.code = code;
+      debugInfo.value.branch = 'exchangeCodeForSession';
+      console.debug('[reset-password] exchanging code for session', { code, type });
+    }
     const { error: exchErr } = await supabase.auth.exchangeCodeForSession(code);
     if (exchErr) {
+      if (debug.value) console.debug('[reset-password] exchangeCodeForSession failed', exchErr);
       // Fall back to hash method next
     } else {
       sessionReady.value = true;
@@ -57,6 +102,11 @@ async function establishSession() {
   // Hash fallback
   const { access_token, refresh_token, type: hashType } = parseHashParams();
   if (hashType === 'recovery' && access_token && refresh_token) {
+    if (debug.value) {
+      debugInfo.value.hash = window.location.hash;
+      debugInfo.value.branch = 'setSession';
+      console.debug('[reset-password] setting session from hash', { access_token: access_token ? 'present' : 'missing' });
+    }
     const { error: setErr } = await supabase.auth.setSession({ access_token, refresh_token });
     if (setErr) {
       error.value = 'Could not validate recovery link. Please request a new one.';
@@ -74,6 +124,14 @@ async function establishSession() {
 }
 
 onMounted(() => {
+  // determine debug visibility
+  try {
+    const u = new URL(window.location.href);
+    debug.value = u.hostname.includes('localhost') || u.searchParams.get('debug') === 'true';
+    debugInfo.value.href = window.location.href;
+  } catch (e) {
+    debug.value = false;
+  }
   establishSession();
 });
 
@@ -103,8 +161,8 @@ async function handleUpdatePassword() {
   if (window.location.hash) {
     history.replaceState(null, document.title, window.location.pathname + window.location.search);
   }
-  // Redirect after short delay
-  setTimeout(() => router.push("/login"), 2500);
+  // // Redirect after short delay
+  // setTimeout(() => router.push("/login"), 2500);
 }
 </script>
 
@@ -168,6 +226,15 @@ async function handleUpdatePassword() {
               </div>
             </CardContent>
           </Card>
+            <div v-if="debug" class="mt-4 text-xs bg-black/5 p-3 rounded">
+              <div class="font-medium">Debug</div>
+              <div class="truncate">href: {{ debugInfo.href }}</div>
+              <div>branch: {{ debugInfo.branch }}</div>
+              <div>code: {{ debugInfo.code }}</div>
+              <div>token: {{ debugInfo.token }}</div>
+              <div>token_type: {{ debugInfo.token_type }}</div>
+              <div class="truncate">hash: {{ debugInfo.hash }}</div>
+            </div>
         </div>
       </div>
     </div>
