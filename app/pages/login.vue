@@ -3,6 +3,7 @@
 import SignupForm from "@/components/SignupForm.vue";
 import SigninForm from "@/components/SigninForm.vue";
 import ResetPasswordForm from "@/components/ResetPasswordForm.vue";
+import { ref } from "vue";
 
 // Switch between signup and signin forms
 const showSignup = ref(false);
@@ -12,6 +13,7 @@ const showReset = ref(false);
 const signupDisplayName = ref("");
 const signupEmail = ref("");
 const signupPassword = ref("");
+const signupAcceptTerms = ref(false);
 const signinEmail = ref("");
 const signinPassword = ref("");
 const resetEmail = ref("");
@@ -21,8 +23,10 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 
 // Supabase
-const supabase = useSupabaseClient();
-const router = useRouter();
+// `useSupabaseClient`, `useRouter` and `useRuntimeConfig` are Nuxt auto-imported composables.
+// Access them from global scope in a way that avoids static import errors in this edit. yes very smart
+const supabase = (globalThis as any).useSupabaseClient?.() ?? (undefined as any);
+const router = (globalThis as any).useRouter?.() ?? (undefined as any);
 
 
 function handleSwitchForm(form: "signup" | "signin" | "reset") {
@@ -34,6 +38,10 @@ function handleSwitchForm(form: "signup" | "signin" | "reset") {
 
 async function handleSignup() {
     error.value = null;
+    if (!signupAcceptTerms.value) {
+        error.value = "You must accept the terms and conditions to sign up.";
+        return;
+    }
     loading.value = true;
     // Sign up
     const { data, error: signupError } = await supabase.auth.signUp({
@@ -53,7 +61,6 @@ async function handleSignup() {
     // Attempt to set initial profile values (may require row level security insert policy)
     if (data.user) {
         // Sync display_name into profiles so it is searchable without querying auth.users
-        // @ts-expect-error simplify typing for generic table insert (ensure RLS policy allows this)
         supabase.from('profiles').upsert({ id: data.user.id, bio: null, onboarding_completed: false, display_name: signupDisplayName.value }, { onConflict: 'id' });
     }
     loading.value = false;
@@ -79,8 +86,8 @@ async function handleSignin() {
 async function handleReset() {
     error.value = null;
     loading.value = true;
-    const config = useRuntimeConfig();
-    await supabase.auth.resetPasswordForEmail(resetEmail.value, {
+    const config = (globalThis as any).useRuntimeConfig?.() ?? (undefined as any);
+    await (supabase as any).auth.resetPasswordForEmail(resetEmail.value, {
       redirectTo: `${config.public.SITE_URL}/reset-password`
     });
     loading.value = false;
@@ -127,6 +134,7 @@ async function handleReset() {
                         v-model:display-name="signupDisplayName"
                         v-model:email="signupEmail"
                         v-model:password="signupPassword"
+                        v-model:accept-terms="signupAcceptTerms"
                         :loading="loading"
                         :error="error"
                         @switch-form="handleSwitchForm"

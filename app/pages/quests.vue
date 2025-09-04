@@ -1,9 +1,21 @@
+/*
+File: quests.vue
+Purpose: Quests page — list, start, track progress, and complete environmental challenges.
+Author: GitHub Copilot (added header & comments)
+Date: 2025-09-04
+Notes: Only non-functional comments and a header were added for readability and maintainability.
+*/
+
 <script setup lang="ts">
+// --- Page meta ---------------------------------------------------------------
+// Define layout and tagline used by the app shell.
 definePageMeta({
 	layout: 'app-shell',
 	tagline: 'Complete challenges, earn points, and make a difference.'
 })
 
+// --- Imports -----------------------------------------------------------------
+// Vue composition API utilities, composables and UI components used on this page.
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useQuests } from '~/composables/useQuests'
 import Card from '~/components/ui/card/Card.vue'
@@ -11,15 +23,22 @@ import Button from '~/components/ui/button/Button.vue'
 import Badge from '~/components/ui/badge/Badge.vue'
 import Progress from '~/components/ui/progress/Progress.vue'
 
+// --- Local state & constants -------------------------------------------------
+// Track which tab is active and expose composable values for quests and actions.
 const activeTab = ref<'active' | 'new' | 'completed'>('active')
 const { active, discover, completed, loading, error, enroll, incrementProgress, cancelQuest } = useQuests()
-// Limit of active quests
+
+// Limit of active quests allowed for a user.
 const MAX_ACTIVE = 3
 const canStartMore = computed(() => active.value.length < MAX_ACTIVE)
+
+// Alert dialog imports (used for cancel confirmation)
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction, AlertDialogTrigger } from '~/components/ui/alert-dialog'
 const confirmCancelId = ref<number | null>(null)
 
-// Confetti on quest completion
+// --- Lifecycle: Confetti on completion ---------------------------------------
+// Register an event bus listener on mount to fire confetti when a quest is completed.
+// Lazy imports keep server-side rendering safe and reduce initial bundle size.
 let stopListener: (() => void) | null = null
 onMounted(async () => {
 	// Lazy import to keep SSR safe and reduce bundle size on initial load
@@ -59,19 +78,23 @@ onMounted(async () => {
 })
 onBeforeUnmount(() => { if (stopListener) stopListener(); })
 
-// Choose a featured quest (prioritise active, else discover)
+// --- Computed helpers & featured selection ----------------------------------
+// Pick a single featured quest to display; prefer active -> discover -> none.
 const featuredQuest = computed(() => {
 	if (active.value.length) return { type: 'active' as const, data: active.value[0] }
 	if (discover.value.length) return { type: 'discover' as const, data: discover.value[0] }
 	return null
 })
 
+// Filter quests shown based on the current tab.
 const filteredQuests = computed(() => {
 	if (activeTab.value === 'active') return active.value
 	if (activeTab.value === 'new') return discover.value
 	return completed.value
 })
 
+// --- Helper functions -------------------------------------------------------
+// Compute percentage progress for a quest (safe guards included).
 function percent(q: any) {
 	if (!q?.max_value) return 0
 	if (typeof q.percent === 'number') return q.percent
@@ -79,26 +102,31 @@ function percent(q: any) {
 	return 0
 }
 
+// Compute total points rewarded by a quest (max_value * multiplier).
 function questPoints(q: any) {
 	const max = q?.max_value ?? 0
 	const mult = q?.points_multiplier ?? 0
 	return max * mult
 }
 
+// Human-readable category label (fallback to 'General' if not set).
 function questCategory(q: any) {
 	return q?.category || 'General'
 }
 
+// Progress label like "2 of 5" or empty when not applicable.
 function progressLabel(q: any) {
 	if (q?.max_value == null) return ''
 	const prog = q.progress ?? 0
 	return `${prog} of ${q.max_value}`
 }
 
+// Distinguish between a raw discover quest and a user's enrolled quest.
 function isUserQuest(q: any): boolean {
 	return q && ('completed' in q || 'progress' in q)
 }
 
+// Start a quest: enroll if it's a discover item and ensure active limit is respected.
 async function startQuest(q: any) {
 	// Prevent starting more than the maximum allowed active quests
 	if (!canStartMore.value) return
@@ -108,6 +136,7 @@ async function startQuest(q: any) {
 	}
 }
 
+// Utility for tab button classes.
 function tabClass(tab: typeof activeTab.value) {
 	return [
 		'px-3 py-1 text-xs font-medium rounded-full cursor-pointer transition-colors',

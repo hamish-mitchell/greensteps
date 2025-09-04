@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // Presentational only, all logic handled in parent
 const emit = defineEmits<{
@@ -21,6 +22,7 @@ defineProps<{
     displayName: string;
     email: string;
     password: string;
+    acceptTerms: boolean;
     loading: boolean;
     error: string | null;
 }>();
@@ -28,6 +30,7 @@ defineProps<{
 const modelDisplayName = defineModel<string>("displayName");
 const modelEmail = defineModel<string>("email");
 const modelPassword = defineModel<string>("password");
+const modelAcceptTerms = defineModel<boolean>("acceptTerms");
 </script>
 
 <template>
@@ -70,10 +73,17 @@ const modelPassword = defineModel<string>("password");
                         type="password"
                     />
                 </div>
+                <div class="flex items-start gap-2 mt-2">
+                    <Checkbox v-model="modelAcceptTerms" id="accept-terms" />
+                    <label for="accept-terms" class="text-sm">
+                        I agree to the
+                        <a href="/terms" class="underline text-emerald-500">terms and conditions</a>
+                    </label>
+                </div>
                 <Button
                     type="submit"
                     class="w-full flex items-center justify-center"
-                    :disabled="loading"
+                    :disabled="loading || !modelAcceptTerms"
                 >
                     <svg
                         v-if="loading"

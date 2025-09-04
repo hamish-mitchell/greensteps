@@ -1,4 +1,21 @@
+<!--
+  emissions.vue
+  -------------------------------
+  This page displays the user's carbon emissions data, including:
+    - KPIs (total emissions, average daily footprint, best category)
+    - Monthly emissions bar chart (Chart.js)
+    - Category breakdown donut chart (Chart.js)
+    - Recent activity and full emissions history
+    - Filtering by credit/debit/all
+  Data is fetched from Supabase 'activities' table.
+  Author: Thomas Clemow
+  Last updated: 3/09/2025
+-->
+
 <script setup lang="ts">
+/**
+ * Page meta and layout
+ */
 definePageMeta({
   layout: "app-shell",
   tagline: "Track and understand your carbon footprint.",
@@ -6,21 +23,25 @@ definePageMeta({
 
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 
+// UI Components
 import Card from '~/components/ui/card/Card.vue'
 import Button from '~/components/ui/button/Button.vue'
 import Badge from '~/components/ui/badge/Badge.vue'
 import Separator from '~/components/ui/separator/Separator.vue'
 
-// Breadcrumb components
+// Breadcrumb components (not used in template, but imported for future use)
 import Breadcrumb from '~/components/ui/breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/ui/breadcrumb/BreadcrumbItem.vue'
 import BreadcrumbList from '~/components/ui/breadcrumb/BreadcrumbList.vue'
 import BreadcrumbPage from '~/components/ui/breadcrumb/BreadcrumbPage.vue'
 
-// Charts commented out
+// Chart.js components (handled via dynamic import below)
 // import ChartBar from '~/components/ui/chart-bar/ChartBar.vue'
 // import ChartDonut from '~/components/ui/chart-donut/ChartDonut.vue'
 
+/**
+ * Types
+ */
 type HistoryItem = {
   id: number
   activity: string
@@ -30,16 +51,23 @@ type HistoryItem = {
   type: 'debit' | 'credit'
 }
 
-// Activities fetched from DB
+// State for activities/history
 const history = ref<HistoryItem[]>([])
 const loading = ref(false)
 const loadError = ref<string|null>(null)
 
+// Supabase client/user
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 
+/**
+ * ActivityRow interface for DB rows
+ */
 interface ActivityRow { id: string; type: string; category: string; emission_kg: number; created_at: string; quantity: number; unit: string }
 
+/**
+ * Fetch activities from Supabase and populate history
+ */
 async function loadActivities() {
   if (!user.value) return
   loading.value = true
@@ -66,18 +94,28 @@ async function loadActivities() {
   loading.value = false
 }
 
+// Watch for user changes and load activities
 watch(() => user.value?.id, (id) => { if (id) loadActivities() }, { immediate: true })
 
+/**
+ * Utility: Capitalise first letter
+ */
 function capitalise(s: string) { return s.charAt(0).toUpperCase() + s.slice(1) }
 
+/**
+ * KPIs and computed values
+ */
 const totalEmissionsYTD = computed(() =>
   history.value.reduce((s, i) => s + i.impactKg, 0)
 )
 const avgDailyFootprint = computed(() => (totalEmissionsYTD.value / 210).toFixed(1))
-const bestCategory = computed(() => 'Recycling')
+const bestCategory = computed(() => 'Recycling') // Placeholder
 
 const recentActivity = computed(() => history.value.slice(0, 3))
 
+/**
+ * Filtering by mode (all/credit/debit)
+ */
 const mode = ref<'all' | 'credit' | 'debit'>('all')
 const filteredHistory = computed(() => {
   if (mode.value === 'all') return history.value
@@ -87,6 +125,9 @@ function setMode(m: 'all' | 'credit' | 'debit') {
   mode.value = m
 }
 
+/**
+ * Formatting helpers
+ */
 function fmtImpact(v: number) {
   const sign = v > 0 ? '+' : ''
   return `${sign}${v.toFixed(1)} kg`
@@ -95,7 +136,9 @@ function impactClass(v: number) {
   return v > 0 ? 'text-red-500' : 'text-emerald-600'
 }
 
-// Derived datasets for charts
+/**
+ * Chart data: Monthly emissions (bar chart)
+ */
 const monthlyEmissions = computed(() => {
   // group by YYYY-MM from history
   const buckets: Record<string, number> = {}
@@ -113,6 +156,9 @@ const monthlyEmissions = computed(() => {
   })
 })
 
+/**
+ * Chart data: Category breakdown (donut chart)
+ */
 const categoryBreakdown = computed(() => {
   const total = history.value.reduce((s,i)=> s + Math.abs(i.impactKg), 0) || 1
   const bucket: Record<string, number> = {}
@@ -125,7 +171,9 @@ const categoryBreakdown = computed(() => {
     .map(([label,val],i)=> ({ label, value: Math.round(val/total*100), color: palette[i % palette.length] }))
 })
 
-// ---- Chart.js Integration ----
+/**
+ * Chart.js Integration
+ */
 const barCanvas = ref<HTMLCanvasElement | null>(null)
 const donutCanvas = ref<HTMLCanvasElement | null>(null)
 
@@ -134,6 +182,7 @@ let ChartLib: any // will hold the Chart constructor after dynamic import
 let barChart: ChartType | null = null
 let donutChart: ChartType | null = null
 
+// Dynamically import Chart.js and build charts on mount
 onMounted(async () => {
   const mod = await import('chart.js/auto')
   ChartLib = mod.default
@@ -141,11 +190,15 @@ onMounted(async () => {
   rebuildCharts()
 })
 
+// Destroy charts on unmount
 onBeforeUnmount(() => {
   barChart?.destroy()
   donutChart?.destroy()
 })
 
+/**
+ * Build bar chart (monthly emissions)
+ */
 function buildBarChart() {
   if (!barCanvas.value || !ChartLib) return
   barChart?.destroy()
@@ -185,6 +238,9 @@ function buildBarChart() {
   })
 }
 
+/**
+ * Build donut chart (category breakdown)
+ */
 function buildDonutChart() {
   if (!donutCanvas.value || !ChartLib) return
   donutChart?.destroy()
@@ -215,14 +271,21 @@ function buildDonutChart() {
   })
 }
 
+/**
+ * Rebuild both charts
+ */
 function rebuildCharts() {
   buildBarChart();
   buildDonutChart();
 }
 
+// Watch for data changes and rebuild charts
 watch(monthlyEmissions, () => rebuildCharts())
 watch(categoryBreakdown, () => rebuildCharts())
 
+/**
+ * Get CSS variable value (for chart colors)
+ */
 function getCssVar(name: string, fallback: string) {
   if (typeof window === 'undefined') return fallback
   const v = getComputedStyle(document.documentElement).getPropertyValue(name)
@@ -231,6 +294,13 @@ function getCssVar(name: string, fallback: string) {
 </script>
 
 <template>
+  <!--
+    Emissions Dashboard Page
+    - KPIs
+    - Charts (bar, donut)
+    - Recent activity
+    - Emission history table with filter
+  -->
   <div class="flex flex-col h-full max-h-full">
 
     <div
@@ -321,7 +391,7 @@ function getCssVar(name: string, fallback: string) {
         </Card>
       </div>
 
-      <!-- History -->
+      <!-- History Table -->
       <Card class="p-4">
         <div class="flex flex-col gap-4">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -382,6 +452,7 @@ function getCssVar(name: string, fallback: string) {
 </template>
 
 <style scoped>
+/* Custom scrollbar for emissions page */
 .custom-scroll::-webkit-scrollbar {
   width: 8px;
 }

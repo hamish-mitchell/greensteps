@@ -1,5 +1,15 @@
+<!--
+  Account Settings page for GreenSteps app.
+  - Allows users to update their profile image, name, and view email - Email functionality working kinda.
+  - Supports avatar upload via Supabase Storage (THE BUCKET!).
+  - Allows updating display name (stored in both auth metadata and profiles table).
+  Author: Thomas Clemow
+  Last Updated: 30/08/2025
+-->
+
 <template>
   <app-shell>
+    <!-- Main layout: sidebar + main content -->
     <div class="flex min-h-screen">
       <!-- Sidebar -->
       <AppSidebar class="hidden md:block" />
@@ -11,11 +21,13 @@
         <!-- Profile Image Section -->
         <div class="bg-white dark:bg-gray-900 rounded-lg shadow p-8 mb-8 flex flex-col md:flex-row items-center md:items-start gap-8 w-full">
           <div class="flex flex-col items-center">
+            <!-- User avatar -->
             <img
               :src="avatarUrl || defaultAvatar"
               alt="Profile Image"
               class="w-32 h-32 rounded-full object-cover border-4 shadow-[0_4px_24px_rgba(0,0,0,0.7)] mb-4 transition-all duration-300"
             >
+            <!-- Avatar upload button -->
             <label class="shad-btn shad-btn-primary cursor-pointer px-6 py-2 font-semibold">
               Change Image
               <input type="file" accept="image/*" class="hidden" @change="onAvatarChange" >
@@ -103,7 +115,7 @@
           </form>
         </div>
 
-        <!-- Danger Zone -->
+        <!-- "Danger Zone" - funny song -->
         <div class="bg-white dark:bg-gray-900 rounded-lg shadow p-6">
           <h2 class="text-xl font-semibold mb-4 text-red-600">Danger Zone</h2>
           <div class="flex items-center justify-between">
@@ -122,28 +134,33 @@
 </template>
 
 <script setup>
+// Import Vue and composables
 import { ref, onMounted } from 'vue'
 import AppSidebar from '~/components/AppSidebar.vue'
 import appShell from '~/layouts/app-shell.vue'
 import { useSupabaseClient, useSupabaseUser } from '#imports'
 
+// Initialize Supabase client and user composable
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
-// Use correct path for default avatar in public/avatars/
+// Path to default avatar image
 const defaultAvatar = '/avatars/default-avatar.png'
 
+// Reactive state for profile info
 const profile = ref({
   name: '',
   email: '',
   avatar_url: ''
 })
-const avatarUrl = ref('')
-const saving = ref(false)
-const uploading = ref(false)
+const avatarUrl = ref('') // Holds current avatar URL
+const saving = ref(false) // Indicates if profile is being saved
+const uploading = ref(false) // Indicates if avatar is uploading
 
+// Fetch user profile info on mount
 onMounted(async () => {
   if (user.value) {
     try {
+      // Fetch avatar_url from profiles table
       const { data, error } = await supabase
         .from('profiles')
         .select('avatar_url')
@@ -153,18 +170,18 @@ onMounted(async () => {
         console.error('Error fetching profile:', error)
       }
       if (data) {
-  // profile name is stored in auth user metadata (display_name). Use that as editable name.
-  profile.value.name = user.value?.user_metadata?.display_name || ''
-  profile.value.email = user.value.email
+        // Set profile name from auth user metadata
+        profile.value.name = user.value?.user_metadata?.display_name || ''
+        profile.value.email = user.value.email
         profile.value.avatar_url = data.avatar_url
-        // Fallback to default avatar if not set or broken
+        // Set avatar URL, fallback to default if not set
         if (data.avatar_url) {
           avatarUrl.value = data.avatar_url + '?t=' + Date.now()
         } else {
           avatarUrl.value = defaultAvatar
         }
       } else {
-  avatarUrl.value = defaultAvatar
+        avatarUrl.value = defaultAvatar
       }
     } catch (err) {
       console.error('Exception in onMounted profile fetch:', err)
@@ -175,10 +192,15 @@ onMounted(async () => {
   }
 })
 
+/**
+ * Handles avatar image file change and upload to Supabase Storage.
+ * Updates avatar URL in both UI and database.
+ */
 async function onAvatarChange(e) {
   const files = e.target && e.target.files
   if (!files || !files[0]) return
   const file = files[0]
+  // Enforce 2MB max file size
   if (file.size > 2 * 1024 * 1024) {
     alert('Image must be less than 2MB.')
     console.warn('Upload failed: file too large', { size: file.size })

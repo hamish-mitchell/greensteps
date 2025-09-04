@@ -1,3 +1,17 @@
+<!--
+  Onboarding Page
+  ----------------
+  New user onboarding to gather profile data.
+  functions:
+    - Stepper navigation with progress bar
+    - Dynamic vehicle search from CSV
+    - Form validation and profile upsert via Supabase
+    - Review step before submission
+
+  Author: Hamish Mitchel
+  Date: 02/09/2025
+-->
+
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue';
 import { Button } from '@/components/ui/button';
@@ -6,19 +20,23 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Home, Car, Leaf, CheckCircle2 } from 'lucide-vue-next';
 
+// Page meta for layout and tagline
 definePageMeta({
   layout: 'app-shell',
   tagline: 'Tell us a little about your household & lifestyle so we can personalise your impact.'
 });
 
+// Supabase composables
 const supabase = useSupabaseClient();
 const user = useSupabaseUser();
+
+// State refs
 const loading = ref(true);
 const submitting = ref(false);
 const error = ref<string|null>(null);
 const step = ref(0);
 
-// Ordered steps definition (with icons)
+// Steps definition for onboarding
 const steps = [
   { key: 'household', title: 'Household', description: 'Where & how you live', icon: Home },
   { key: 'transport', title: 'Transport', description: 'How you get around', icon: Car },
@@ -26,7 +44,7 @@ const steps = [
   { key: 'review', title: 'Review', description: 'Check & finish', icon: CheckCircle2 }
 ];
 
-// Form state reflecting profiles columns we care about
+// Form state reflecting user profile fields
 interface FormState {
   household_size?: number;
   home_type: string;
@@ -47,6 +65,7 @@ interface FormState {
   postcode: string;
 }
 
+// Reactive form object
 const form = reactive<FormState>({
   household_size: undefined,
   home_type: '',
@@ -75,6 +94,7 @@ const vehicleSearch = ref('');
 const selectedVehicleName = ref('');
 const vehicleLoading = ref(false);
 
+// Load vehicle data from CSV (client-side only)
 async function loadVehicles() {
   if (vehiclesLoaded.value || vehicleLoading.value) return;
   if (!import.meta.client) return; // only client-side
@@ -100,17 +120,19 @@ async function loadVehicles() {
   }
 }
 
-// Filter logic (case-insensitive contains)
+// Filter vehicles by search query
 const filteredVehicles = computed(() => {
   const q = vehicleSearch.value.trim().toLowerCase();
   if (!q) return vehicles.value.slice(0, 50); // initial shortlist
   return vehicles.value.filter(v => v.name.toLowerCase().includes(q)).slice(0, 200);
 });
 
+// Watch car ownership and step to trigger vehicle loading
 watch([() => form.car_ownership, step], ([own]) => {
   if (own && (steps[step.value] as typeof steps[number]).key === 'transport') loadVehicles();
 });
 
+// When vehicle is selected, update form fields
 watch(selectedVehicleName, (val) => {
   if (!val) return;
   const brand: string = (val.split(' ')[0]) || '';
@@ -118,7 +140,7 @@ watch(selectedVehicleName, (val) => {
   form.car_model = val.replace(/^\s*"?/, '').replace(new RegExp('^' + brand + '\\s*'), '').trim();
 });
 
-// Preload existing profile (user may return to onboarding)
+// Load existing profile data if available
 async function loadProfile() {
   if (!user.value?.id) return;
   loading.value = true;
@@ -134,30 +156,33 @@ async function loadProfile() {
       // @ts-expect-error dynamic assign
       form[k] = v ?? (typeof form[k as keyof FormState] === 'string' ? '' : undefined);
     });
-    // If user somehow already completed, push to dashboard
-  if ((data as { onboarding_completed?: boolean }).onboarding_completed) navigateTo('/dashboard');
+    // If user already completed onboarding, redirect to dashboard
+    if ((data as { onboarding_completed?: boolean }).onboarding_completed) navigateTo('/dashboard');
   }
   loading.value = false;
 }
 
+// Watch for user ID and load profile immediately
 watch(() => user.value?.id, (id) => { if (id) loadProfile(); }, { immediate: true });
 
+// Progress calculation
 const progress = computed(() => Math.round(((step.value + 1) / steps.length) * 100));
-// steps array is static & non-empty
 const currentStep = computed(() => (steps[step.value] as typeof steps[number]));
 
+// Step navigation
 function next() { if (step.value < steps.length - 1) step.value++; }
 function prev() { if (step.value > 0) step.value--; }
 
+// Show review step
 const showReview = computed(() => (steps[step.value] as typeof steps[number]).key === 'review');
 
+// Submit onboarding form to Supabase
 async function submit() {
   submitting.value = true;
   error.value = null;
   if (!user.value?.id) return; // safety
   const payload: Record<string, unknown> = { ...form, onboarding_completed: true };
-  // NOTE: baseline_emissions_kg will be auto-populated by DB trigger (trg_profiles_baseline)
-  // Use upsert via any to bypass generated types if not present
+  // Upsert profile data
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const client: any = supabase;
   const { error: updateError } = await client.from('profiles').upsert({ id: user.value.id, ...payload }, { onConflict: 'id' });
@@ -169,7 +194,7 @@ async function submit() {
   navigateTo('/dashboard');
 }
 
-// Basic required checks per step (soft requirements; user can skip some optional fields)
+// Step validation logic
 const stepValid = computed(() => {
   const key = (steps[step.value] as typeof steps[number]).key;
   if (key === 'household') return form.household_size !== undefined && !!form.home_type && form.green_power_percent !== undefined;
@@ -180,11 +205,20 @@ const stepValid = computed(() => {
 </script>
 
 <template>
+  <!--
+    Onboarding UI
+    -------------
+    - Decorative background
+    - Stepper navigation and progress
+    - Step forms: household, transport, lifestyle, review
+    - Error and loading states
+    - Submission controls
+  -->
   <div class="space-y-8 relative">
     <!-- Decorative background -->
     <div class="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-  <div class="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-gradient-to-br from-emerald-300/20 via-emerald-500/10 to-transparent blur-3xl" />
-  <div class="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-gradient-to-tr from-emerald-400/10 via-emerald-600/10 to-transparent blur-2xl" />
+      <div class="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-gradient-to-br from-emerald-300/20 via-emerald-500/10 to-transparent blur-3xl" />
+      <div class="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-gradient-to-tr from-emerald-400/10 via-emerald-600/10 to-transparent blur-2xl" />
     </div>
 
     <!-- Header & progress -->
@@ -221,6 +255,7 @@ const stepValid = computed(() => {
       </div>
     </div>
 
+    <!-- Loading state -->
     <div v-if="loading" class="p-16 text-center text-muted-foreground animate-pulse">Loading profile...</div>
     <div v-else class="transition-opacity duration-300">
       <Card class="backdrop-blur supports-[backdrop-filter]:bg-background/70 shadow-lg border-emerald-500/20">
@@ -238,10 +273,12 @@ const stepValid = computed(() => {
         <CardContent class="space-y-8">
           <!-- Household Step -->
           <div v-if="(steps[step] as typeof steps[number]).key==='household'" class="grid gap-4 md:grid-cols-2">
+            <!-- Household size input -->
             <div>
               <Label>Household size *</Label>
               <Input v-model.number="form.household_size" type="number" min="1" placeholder="e.g. 3" />
             </div>
+            <!-- Home type select -->
             <div>
               <Label>Home type *</Label>
               <select v-model="form.home_type" class="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
@@ -251,6 +288,7 @@ const stepValid = computed(() => {
                 <option value="semi_detached">Semi-detached / townhouse</option>
               </select>
             </div>
+            <!-- Heating type select -->
             <div>
               <Label>Heating type</Label>
               <select v-model="form.heating_type" class="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
@@ -261,10 +299,12 @@ const stepValid = computed(() => {
                 <option value="heat_pump">Heat pump</option>
               </select>
             </div>
+            <!-- Green power percent input -->
             <div>
               <Label>Green power subscription (%) *</Label>
               <Input v-model.number="form.green_power_percent" type="number" min="0" max="100" placeholder="e.g. 50" />
             </div>
+            <!-- Postcode input -->
             <div class="md:col-span-2">
               <Label>Postcode</Label>
               <Input v-model="form.postcode" placeholder="e.g. 3000" />
@@ -273,6 +313,7 @@ const stepValid = computed(() => {
 
           <!-- Transport Step -->
           <div v-if="(steps[step] as typeof steps[number]).key==='transport'" class="grid gap-4 md:grid-cols-3">
+            <!-- Car ownership select -->
             <div>
               <Label>Do you own / regularly use a car? *</Label>
               <select v-model="form.car_ownership" class="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
@@ -281,7 +322,9 @@ const stepValid = computed(() => {
                 <option :value="false">No</option>
               </select>
             </div>
+            <!-- Car details if owned -->
             <template v-if="form.car_ownership">
+              <!-- Fuel type select -->
               <div>
                 <Label>Fuel type</Label>
                 <select v-model="form.car_fuel_type" class="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
@@ -292,10 +335,12 @@ const stepValid = computed(() => {
                   <option value="electric">Electric</option>
                 </select>
               </div>
+              <!-- Car year input -->
               <div>
                 <Label>Year</Label>
                 <Input v-model.number="form.car_year" type="number" min="1980" max="2100" placeholder="e.g. 2018" />
               </div>
+              <!-- Vehicle search and selection -->
               <div class="md:col-span-3 grid gap-4 md:grid-cols-3">
                 <div class="md:col-span-3 space-y-2">
                   <Label>Select your vehicle</Label>
@@ -313,7 +358,7 @@ const stepValid = computed(() => {
                         <span v-else>{{ filteredVehicles.length }}</span>
                       </div>
                     </div>
-                    <!-- When results small (<=15) show select -->
+                    <!-- Show select if results are small -->
                     <div v-if="filteredVehicles.length && filteredVehicles.length <= 15" class="space-y-1">
                       <select
                         v-model="selectedVehicleName"
@@ -323,7 +368,7 @@ const stepValid = computed(() => {
                         <option v-for="v in filteredVehicles" :key="v.name" :value="v.name">{{ v.name }}</option>
                       </select>
                     </div>
-                    <!-- Else show scrollable suggestion list (limit) -->
+                    <!-- Show scrollable suggestion list otherwise -->
                     <div
                       v-else-if="vehicleSearch && filteredVehicles.length > 0"
                       class="max-h-64 overflow-auto rounded-md border bg-background shadow-inner divide-y"
@@ -339,26 +384,31 @@ const stepValid = computed(() => {
                       </button>
                       <div v-if="filteredVehicles.length === 200" class="px-3 py-1 text-[10px] text-muted-foreground">Showing first 200 matches… refine search</div>
                     </div>
+                    <!-- Selected vehicle display -->
                     <div v-if="selectedVehicleName" class="text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
                       <span class="inline-block h-2 w-2 rounded-full bg-emerald-500" />
                       Selected: <strong class="font-medium">{{ selectedVehicleName }}</strong>
                     </div>
                   </div>
                 </div>
+                <!-- Weekly car km input -->
                 <div>
                   <Label>Weekly car km (avg)</Label>
                   <Input v-model.number="form.avg_weekly_car_km" type="number" min="0" placeholder="e.g. 150" />
                 </div>
               </div>
             </template>
+            <!-- Public transport km input -->
             <div>
               <Label>Weekly public transport km (avg)</Label>
               <Input v-model.number="form.avg_weekly_pt_km" type="number" min="0" placeholder="e.g. 40" />
             </div>
+            <!-- Short haul flights input -->
             <div>
               <Label>Short haul flights / year</Label>
               <Input v-model.number="form.flights_short_haul_per_year" type="number" min="0" placeholder="e.g. 2" />
             </div>
+            <!-- Long haul flights input -->
             <div>
               <Label>Long haul flights / year</Label>
               <Input v-model.number="form.flights_long_haul_per_year" type="number" min="0" placeholder="e.g. 1" />
@@ -367,6 +417,7 @@ const stepValid = computed(() => {
 
           <!-- Lifestyle Step -->
           <div v-if="(steps[step] as typeof steps[number]).key==='lifestyle'" class="grid gap-4 md:grid-cols-2">
+            <!-- Diet select -->
             <div>
               <Label>Diet *</Label>
               <select v-model="form.diet_type" class="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
@@ -377,6 +428,7 @@ const stepValid = computed(() => {
                 <option value="vegan">Vegan</option>
               </select>
             </div>
+            <!-- Recycles checkbox -->
             <div class="flex flex-col space-y-2">
               <Label>Recycles *</Label>
               <div class="flex items-center space-x-2">
@@ -384,6 +436,7 @@ const stepValid = computed(() => {
                 <Label for="recycles">I regularly recycle household waste</Label>
               </div>
             </div>
+            <!-- Composts checkbox -->
             <div class="flex flex-col space-y-2">
               <Label>Composts *</Label>
               <div class="flex items-center space-x-2">
@@ -409,6 +462,7 @@ const stepValid = computed(() => {
             </div>
           </div>
 
+          <!-- Error display -->
           <div v-if="error" class="text-sm text-red-500">{{ error }}</div>
         </CardContent>
         <CardFooter class="flex flex-col gap-4 pt-0">

@@ -1,4 +1,17 @@
+<!--
+  leaderboard.vue
+  ----------------
+  Leaderboard page for displaying user rankings.
+  Features:
+    - Toggle between friends and global leaderboard.
+    - Podium display for top 3 users with metallic effects.
+    - List of remaining ranked users.
+    - Uses composable for leaderboard data.
+    - UI components: Card, Button, Badge, Avatar, Separator.
+-->
+
 <script setup lang="ts">
+// Page meta configuration
 definePageMeta({
   layout: "app-shell",
   tagline: "See how you stack up against the competition."
@@ -7,6 +20,7 @@ definePageMeta({
 import { ref, computed, watch } from 'vue'
 import { useLeaderboard } from '~/composables/useLeaderboard'
 
+// UI components
 import Card from '~/components/ui/card/Card.vue'
 import Button from '~/components/ui/button/Button.vue'
 import Badge from '~/components/ui/badge/Badge.vue'
@@ -15,10 +29,16 @@ import AvatarImage from '~/components/ui/avatar/AvatarImage.vue'
 import AvatarFallback from '~/components/ui/avatar/AvatarFallback.vue'
 import Separator from '~/components/ui/separator/Separator.vue'
 
+// Leaderboard scope state: 'friends' or 'global'
 const scope = ref<'friends' | 'global'>('friends')
+
+// Get leaderboard entries and scope setter from composable
 const { entries, setScope } = useLeaderboard('friends')
+
+// Watch for scope changes and update leaderboard accordingly
 watch(scope, (s) => setScope(s as any))
 
+// Map raw entries to display format with rank, name, avatar, etc.
 const ranked = computed(() => entries.value.map(e => ({
   id: e.id,
   name: e.display_name || 'Anon',
@@ -27,34 +47,40 @@ const ranked = computed(() => entries.value.map(e => ({
   rank: e.rank,
   status: e.you ? 'You' : (e.friend ? 'Friend' : undefined)
 })))
+
+// Top 3 users for podium
 const top3 = computed(() => ranked.value.slice(0,3))
+// Remaining users
 const rest = computed(() => ranked.value.slice(3))
 
+// Utility: Get initials from name
 function initials(name: string) { return name.split(' ').map(p=>p[0]).join('').slice(0,2) }
+// Utility: Format points with thousands separator
 function formatPts(n: number) { return n.toLocaleString() + ' pts' }
 </script>
 
 <template>
   <div class="flex flex-col h-full max-h-full">
-    <!-- Single breadcrumb (optional) -->
+    <!-- Breadcrumb header -->
     <div class="mb-4">
       <div class="text-xs text-muted-foreground">Leaderboard</div>
     </div>
 
     <div class="overflow-y-auto pr-2 custom-scroll space-y-6" style="max-height: calc(100vh - 140px)">
-      <!-- Header -->
+      <!-- Page header with scope toggle -->
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 class="text-xl font-semibold tracking-tight">Leaderboard</h1>
           <p class="text-sm text-muted-foreground">See how you stack up against the competition.</p>
         </div>
         <div class="flex gap-2">
+          <!-- Toggle between Friends and Global leaderboard -->
           <Button
             size="sm"
             :variant="scope==='friends' ? 'default' : 'outline'"
             @click="scope='friends'"
           >Friends</Button>
-            <Button
+          <Button
             size="sm"
             :variant="scope==='global' ? 'default' : 'outline'"
             @click="scope='global'"
@@ -66,7 +92,7 @@ function formatPts(n: number) { return n.toLocaleString() + ' pts' }
       <Card class="p-6 space-y-6">
         <h2 class="text-sm font-medium">Rankings</h2>
 
-        <!-- Podium -->
+        <!-- Podium for top 3 users -->
         <div class="w-full flex flex-col gap-10 md:flex-row md:justify-between md:gap-24 items-start">
           <div
             v-for="p in top3"
@@ -81,10 +107,12 @@ function formatPts(n: number) { return n.toLocaleString() + ' pts' }
                 p.rank===3 && 'podium-bronze'
               ]"
             >
+              <!-- User avatar with fallback initials -->
               <Avatar class="h-24 w-24 md:h-28 md:w-28">
                 <AvatarImage :src="p.avatar ?? ''" />
                 <AvatarFallback>{{ initials(p.name) }}</AvatarFallback>
               </Avatar>
+              <!-- Rank badge on avatar -->
               <div
                 class="absolute -top-3 -right-3 h-8 w-8 flex items-center justify-center rounded-full text-xs font-bold text-white shadow"
                 :class=" [
@@ -94,6 +122,7 @@ function formatPts(n: number) { return n.toLocaleString() + ' pts' }
                 ]"
               >{{ p.rank }}</div>
             </div>
+            <!-- User name and status badge -->
             <div class="mt-4 flex items-center gap-2">
               <span class="text-sm font-medium">{{ p.name }}</span>
               <Badge
@@ -102,13 +131,14 @@ function formatPts(n: number) { return n.toLocaleString() + ' pts' }
                 class="text-[10px] px-2 py-0.5 leading-none"
               >{{ p.status }}</Badge>
             </div>
+            <!-- Points display -->
             <div class="text-[11px] text-muted-foreground">{{ formatPts(p.points) }}</div>
           </div>
         </div>
 
         <Separator />
 
-        <!-- Remaining ranks -->
+        <!-- List of remaining ranked users -->
         <div class="rounded-md border overflow-hidden">
           <ul>
             <li
@@ -116,15 +146,19 @@ function formatPts(n: number) { return n.toLocaleString() + ' pts' }
               :key="p.id"
               class="flex items-center gap-4 px-4 py-2 text-sm hover:bg-muted/50 transition-colors border-b last:border-b-0"
             >
+              <!-- Rank number -->
               <span class="w-6 text-xs font-semibold text-muted-foreground">{{ p.rank }}</span>
+              <!-- User avatar -->
               <Avatar class="h-8 w-8 shrink-0">
                 <AvatarImage :src="p.avatar ?? ''" />
                 <AvatarFallback>{{ initials(p.name) }}</AvatarFallback>
               </Avatar>
+              <!-- User name and points -->
               <div class="flex flex-col flex-1">
                 <span class="font-medium leading-tight">{{ p.name }}</span>
                 <span class="text-[10px] text-muted-foreground">{{ formatPts(p.points) }}</span>
               </div>
+              <!-- Status badge and profile button -->
               <div class="flex items-center gap-2">
                 <Badge v-if="p.status" variant="outline" class="text-[10px]">{{ p.status }}</Badge>
                 <Button size="sm" variant="ghost" class="h-7 text-xs px-2">View Profile</Button>
@@ -206,6 +240,7 @@ function formatPts(n: number) { return n.toLocaleString() + ' pts' }
   animation-play-state: running;
 }
 
+/* Custom scrollbar styling */
 .custom-scroll::-webkit-scrollbar {
   width: 8px;
 }

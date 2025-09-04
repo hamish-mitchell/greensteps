@@ -1,23 +1,26 @@
 <script setup lang="ts">
+// Import icons and Vue utilities
 import { Plus } from 'lucide-vue-next';
 import { ref, computed, watch } from 'vue';
+
+// Import composables for dashboard features
 import { useBadges } from '@/composables/useBadges';
 import { useLeaderboard } from '@/composables/useLeaderboard';
-// Activities composable (client-side prototype)
 import { useActivities } from '@/composables/useActivities';
-// Import RawFormPayload type for proper typing of activity submissions
-import type { } from '@/composables/useActivities';
 import { useDashboardSummary } from '@/composables/useDashboardSummary';
 import { useQuests } from '@/composables/useQuests';
 
+// Page meta for layout and tagline
 definePageMeta({
     layout: "app-shell",
     tagline: "Overview of your impact and progress.",
 });
 
+// Supabase client and user composables
 const supabase = useSupabaseClient();
 const user = useSupabaseUser();
 
+// Track user's current streak
 const streak = ref(0);
 
 // Define a type for user metadata
@@ -25,7 +28,7 @@ type UserMetadata = {
     full_name?: string;
 };
 
-// Safer username derivation
+// Compute username: prefer display_name, then full_name, then email prefix
 const username = computed(() => {
     // Prefer display_name from DB profile if available
     const displayName = user.value?.user_metadata?.display_name;
@@ -39,17 +42,18 @@ const username = computed(() => {
     return user.value?.email?.split("@")[0] || "";
 });
 
-// Friendly label (handles plural + punctuation)
+// Friendly label for streak (handles plural and punctuation) - should work now
 const streakLabel = computed(() => {
     const v = streak.value;
     return `🔥 You've got a streak of ${v} day${v === 1 ? '' : 's'}${v > 7 ? '!' : '.'}`;
 });
 
-// Load & update streak when user id becomes available
+// Watch for user id changes to load streak and update it
 watch(
     () => user.value?.id,
     async (id) => {
         if (!id) return;
+        // Fetch current streak from profiles table
         const { data, error } = await supabase
             .from("profiles")
             .select("current_streak")
@@ -58,18 +62,22 @@ watch(
 
         if (!error) streak.value = data?.current_streak ?? 0;
 
-        // Fire and forget; ignore result for simplicity
+        // Fire and forget (this isn't a missile); ignore result for simplicity
         supabase.rpc("update_streak");
     },
     { immediate: true }
 );
 
+// Fetch badges for the user
 const { badges, loading: badgesLoading, error: badgesError } = useBadges();
+
+// Fetch leaderboard entries (global)
 const { entries: leaderboardEntries, loading: leaderboardLoading, error: leaderboardError } = useLeaderboard('global');
 interface LeaderboardEntry { id: string; display_name: string; total_points: number; you?: boolean }
+// Compute top 5 leaderboard entries
 const topLeaderboard = computed<LeaderboardEntry[]>(() => (leaderboardEntries.value as LeaderboardEntry[] || []).slice(0,5));
 
-// Dashboard summary
+// Dashboard summary (emissions, transport, waste, etc.)
 const { data: summary, loading: summaryLoading, error: summaryError, refresh: refreshSummary } = useDashboardSummary();
 
 // Quests (for completed quests count)
@@ -81,11 +89,11 @@ const questsDoneLabel = computed(() => {
     return c === 1 ? '1 quest completed' : `${c} quests completed`;
 });
 
-// Activity handling
+// Activity handling (add new activity from form)
 const { addFromForm, loading: addingActivity, error: addError } = useActivities();
 const lastActivity = ref<null | { type: string; category: string; emission_kg: number }>(null);
 
-// Re-declare minimal shape matching RawFormPayload (cannot import directly if not exported; adjust if exported)
+// Minimal shape for activity form payload (adjust if RawFormPayload is exported)
 type ActivityFormPayload = {
     category: string;
     food: null | { subcategory: string; amountKg: number | null };
@@ -93,11 +101,13 @@ type ActivityFormPayload = {
     electricity: null | { kWh: number | null };
     waste: null | { amountKg: number | null };
 };
+
+// Handle saving a new activity and update dashboard summary
 async function handleSaveActivity(payload: ActivityFormPayload) {
     const result = await addFromForm(payload);
     if (result) {
         lastActivity.value = { type: result.type, category: result.category, emission_kg: result.emission_kg };
-    refreshSummary();
+        refreshSummary();
     }
 }
 </script>
@@ -155,7 +165,7 @@ async function handleSaveActivity(payload: ActivityFormPayload) {
                                         :class="summary && summary.month_saved_kg < 0 ? 'text-red-600' : 'text-green-600'"
                                     >
                                         <template v-if="summary && summary.month_saved_kg < 0">
-                                           Sadly, your days are numbered 🔪🩸
+                                           Sadly you are over your baseline this month, look both ways.
                                         </template>
                                         <template v-else>
                                             This month

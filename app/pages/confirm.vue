@@ -1,3 +1,12 @@
+<!-- 
+
+simple confirmation page after signup, prompts user to check email for confirmation link
+
+Author: Hamish
+Date: 27/08/2025
+
+-->
+
 <script setup lang="ts">
 const user = useSupabaseUser();
 watch(
