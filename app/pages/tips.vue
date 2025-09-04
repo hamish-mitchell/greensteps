@@ -22,6 +22,7 @@ type Article = {
   categoryColor?: string
   excerpt: string
   author: { name: string; avatar?: string }
+  content?: string
 }
 
 const categories = [
@@ -41,7 +42,7 @@ async function loadArticles() {
   try {
     const { data, error } = await supabase
       .from('articles')
-      .select('id, title, category, excerpt, author_name, author_avatar_url')
+      .select('id, title, category, excerpt, author_name, author_avatar_url, content')
       .order('id', { ascending: false })
       .limit(50)
     if (error) throw error
@@ -50,7 +51,8 @@ async function loadArticles() {
       title: r.title,
       category: r.category,
       excerpt: r.excerpt,
-      author: { name: r.author_name, avatar: r.author_avatar_url }
+      author: { name: r.author_name, avatar: r.author_avatar_url },
+      content: r.content
     }))
   } catch (e: any) {
     articlesError.value = e.message
@@ -82,6 +84,24 @@ const expandedArticleId = ref<number | null>(null)
 
 function toggleExpand(id: number) {
   expandedArticleId.value = expandedArticleId.value === id ? null : id
+}
+
+// added: estimate read time and copy link helpers
+function estimateReadTime(content?: string) {
+  if (!content) return '1 min read'
+  const words = content.split(/\s+/).filter(Boolean).length
+  const minutes = Math.max(1, Math.round(words / 200))
+  return `${minutes} min read`
+}
+
+async function copyLink(id: number) {
+  try {
+    const url = `${window.location.origin}${window.location.pathname}#article-${id}`
+    await navigator.clipboard.writeText(url)
+    // Consider adding a toast/visual confirmation in your app shell
+  } catch {
+    // ignore
+  }
 }
 </script>
 
@@ -115,8 +135,36 @@ function toggleExpand(id: number) {
                 <h3 class="font-semibold leading-snug">{{ a.title }}</h3>
                 <p class="text-sm text-muted-foreground line-clamp-2">{{ a.excerpt }}</p>
                 <transition name="fade">
-                  <div v-if="expandedArticleId === a.id" class="mt-2 text-sm text-foreground">
-                    <p>More details about <strong>{{ a.title }}</strong> by {{ a.author.name }}.</p>
+                  <div v-if="expandedArticleId === a.id" class="mt-3 text-sm text-foreground">
+                    <div class="prose max-w-none">
+                      <p v-if="a.content">{{ a.content }}</p>
+                      <p v-else class="text-muted-foreground">No additional content available.</p>
+                    </div>
+
+                    <div class="flex items-center justify-between mt-3">
+                      <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>By <strong>{{ a.author.name }}</strong></span>
+                        <span class="mx-1">•</span>
+                        <span>{{ a.category }}</span>
+                        <span class="mx-1">•</span>
+                        <span>{{ estimateReadTime(a.content) }}</span>
+                      </div>
+
+                      <div class="flex items-center gap-2">
+                        <button
+                          @click.stop="copyLink(a.id)"
+                          class="text-xs px-2 py-1 rounded hover:bg-muted/30"
+                        >
+                          Copy link
+                        </button>
+                        <button
+                          @click.stop="toggleExpand(a.id)"
+                          class="text-xs px-2 py-1 rounded hover:bg-muted/30"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </transition>
               </div>
