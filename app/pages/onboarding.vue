@@ -113,7 +113,7 @@ watch([() => form.car_ownership, step], ([own]) => {
 
 watch(selectedVehicleName, (val) => {
   if (!val) return;
-  const brand = val.split(' ')[0];
+  const brand: string = (val.split(' ')[0]) || '';
   form.car_make = brand;
   form.car_model = val.replace(/^\s*"?/, '').replace(new RegExp('^' + brand + '\\s*'), '').trim();
 });
@@ -156,6 +156,7 @@ async function submit() {
   error.value = null;
   if (!user.value?.id) return; // safety
   const payload: Record<string, unknown> = { ...form, onboarding_completed: true };
+  // NOTE: baseline_emissions_kg will be auto-populated by DB trigger (trg_profiles_baseline)
   // Use upsert via any to bypass generated types if not present
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const client: any = supabase;

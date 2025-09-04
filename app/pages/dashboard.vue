@@ -5,6 +5,8 @@ import { useBadges } from '@/composables/useBadges';
 import { useLeaderboard } from '@/composables/useLeaderboard';
 // Activities composable (client-side prototype)
 import { useActivities } from '@/composables/useActivities';
+// Import RawFormPayload type for proper typing of activity submissions
+import type { } from '@/composables/useActivities';
 import { useDashboardSummary } from '@/composables/useDashboardSummary';
 import { useQuests } from '@/composables/useQuests';
 
@@ -64,8 +66,8 @@ watch(
 
 const { badges, loading: badgesLoading, error: badgesError } = useBadges();
 const { entries: leaderboardEntries, loading: leaderboardLoading, error: leaderboardError } = useLeaderboard('global');
-// leaderboardEntries is a ref from useLeaderboard composable
-const topLeaderboard = computed(() => (leaderboardEntries as any)?.value?.slice(0,5) || []);
+interface LeaderboardEntry { id: string; display_name: string; total_points: number; you?: boolean }
+const topLeaderboard = computed<LeaderboardEntry[]>(() => (leaderboardEntries.value as LeaderboardEntry[] || []).slice(0,5));
 
 // Dashboard summary
 const { data: summary, loading: summaryLoading, error: summaryError, refresh: refreshSummary } = useDashboardSummary();
@@ -83,7 +85,15 @@ const questsDoneLabel = computed(() => {
 const { addFromForm, loading: addingActivity, error: addError } = useActivities();
 const lastActivity = ref<null | { type: string; category: string; emission_kg: number }>(null);
 
-async function handleSaveActivity(payload: any) {
+// Re-declare minimal shape matching RawFormPayload (cannot import directly if not exported; adjust if exported)
+type ActivityFormPayload = {
+    category: string;
+    food: null | { subcategory: string; amountKg: number | null };
+    transport: null | { mode: string; durationHours: number; durationMinutes: number; totalMinutes: number };
+    electricity: null | { kWh: number | null };
+    waste: null | { amountKg: number | null };
+};
+async function handleSaveActivity(payload: ActivityFormPayload) {
     const result = await addFromForm(payload);
     if (result) {
         lastActivity.value = { type: result.type, category: result.category, emission_kg: result.emission_kg };
@@ -120,11 +130,38 @@ async function handleSaveActivity(payload: any) {
             <!-- Stats cards (span 2 columns on large screens) -->
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4 col-span-1 lg:col-span-2">
                 <!-- Emissions Card -->
-                <div class="bg-green-100 rounded-lg p-4 flex flex-col items-center shadow" :class="summaryLoading && 'animate-pulse'">
-                    <span class="text-3xl font-bold text-green-700">{{ summary ? (summary.month_saved_kg.toFixed(1) + 'kg') : '—' }}</span>
-                    <span class="text-green-800 mt-2 font-semibold">Emissions Saved</span>
-                    <span class="text-xs text-green-600 mt-1">This month</span>
-                </div>
+                                <div
+                                    class="rounded-lg p-4 flex flex-col items-center shadow transition"
+                                    :class="[
+                                        summaryLoading ? 'animate-pulse' : '',
+                                        summary ? (summary.month_saved_kg < 0 ? 'bg-red-100' : 'bg-green-100') : 'bg-green-100'
+                                    ]"
+                                >
+                                    <span
+                                        class="text-3xl font-bold"
+                                        :class="summary && summary.month_saved_kg < 0 ? 'text-red-700' : 'text-green-700'"
+                                    >
+                                        {{ summary ? (summary.month_saved_kg.toFixed(1) + 'kg') : '—' }}
+                                    </span>
+                                    <span
+                                        class="mt-2 font-semibold flex items-center gap-1"
+                                        :class="summary && summary.month_saved_kg < 0 ? 'text-red-800' : 'text-green-800'"
+                                    >
+                                        <span v-if="summary && summary.month_saved_kg < 0">😞 Over Baseline</span>
+                                        <span v-else>Emissions Saved</span>
+                                    </span>
+                                    <span
+                                        class="text-xs mt-1"
+                                        :class="summary && summary.month_saved_kg < 0 ? 'text-red-600' : 'text-green-600'"
+                                    >
+                                        <template v-if="summary && summary.month_saved_kg < 0">
+                                           Sadly, your days are numbered 🔪🩸
+                                        </template>
+                                        <template v-else>
+                                            This month
+                                        </template>
+                                    </span>
+                                </div>
                 <!-- Sustainable Travel Card -->
                 <div class="bg-blue-100 rounded-lg p-4 flex flex-col items-center shadow" :class="summaryLoading && 'animate-pulse'">
                     <span class="text-3xl font-bold text-blue-700">{{ summary ? (summary.transport_km_month.toFixed(0) + 'km') : '—' }}</span>
