@@ -1,3 +1,28 @@
+<script setup lang="ts">
+definePageMeta({
+  layout: 'app-shell',
+  tagline: 'Need a hand? Reach out to us.'
+})
+
+import Card from '~/components/ui/card/Card.vue'
+import Button from '~/components/ui/button/Button.vue'
+import Textarea from '~/components/ui/textarea/Textarea.vue'
+import Input from '~/components/ui/input/Input.vue'
+
+const config = useRuntimeConfig()
+const supportEmail = (config.public as any)?.SUPPORT_EMAIL || 'support@example.com'
+
+const name = ref('')
+const email = ref('')
+const message = ref('')
+
+function mailtoHref() {
+  const subj = encodeURIComponent('GreenSteps Support Request')
+  const body = encodeURIComponent(`Name: ${name.value}\nEmail: ${email.value}\n\n${message.value}`)
+  return `mailto:${supportEmail}?subject=${subj}&body=${body}`
+}
+</script>
+
 <template>
   <div class="container mx-auto p-4">
     <Card class="max-w-2xl mx-auto">

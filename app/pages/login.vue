@@ -79,12 +79,11 @@ async function handleSignin() {
 async function handleReset() {
     error.value = null;
     loading.value = true;
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail.value);
+    const config = useRuntimeConfig();
+    await supabase.auth.resetPasswordForEmail(resetEmail.value, {
+      redirectTo: `${config.public.SITE_URL}/reset-password`
+    });
     loading.value = false;
-    if (resetError) {
-        error.value = resetError.message;
-        return;
-    }
     error.value = "If your email is registered, a reset link has been sent.";
 }
 </script>

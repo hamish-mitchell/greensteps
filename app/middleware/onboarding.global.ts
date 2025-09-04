@@ -6,7 +6,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (!supabaseUser.value) return; // not logged in
 
   // Allowed routes without completion
-  const allow = new Set(['/onboarding', '/login', '/confirm']);
+  // Routes that should be accessible even if onboarding not yet complete OR during auth flows
+  const allow = new Set(['/onboarding', '/login', '/confirm', '/reset-password']);
   if (allow.has(to.path)) return;
 
   const { onboardingCompleted, ensureLoaded } = useOnboardingCompleted();
