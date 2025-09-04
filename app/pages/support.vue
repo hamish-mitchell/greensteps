@@ -54,27 +54,3 @@ function mailtoHref() {
     </Card>
   </div>
 </template>
-
-<script setup lang="ts">
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-
-const form = reactive({
-  name: '',
-  email: '',
-  subject: '',
-  message: ''
-})
-
-const sendEmail = () => {
-  const subject = encodeURIComponent(form.subject)
-  const body = encodeURIComponent(`Name: ${form.name}\nEmail: ${form.email}\n\n${form.message}`)
-  window.open(`mailto:support@greensteps.app?subject=${subject}&body=${body}`)
-}
-</script>
-
-<style>
-</style>
