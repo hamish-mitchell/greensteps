@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  auth: false  // Allow access without authentication
+})
+
 import { ref } from 'vue'
 import Card from '~/components/ui/card/Card.vue'
 import Button from '~/components/ui/button/Button.vue'
@@ -45,10 +49,17 @@ async function demoParseActivity() {
   error.value = null
   
   try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // Call the actual API endpoint
+    const response = await $fetch('/api/ai/parse-activity', {
+      method: 'POST',
+      body: { input: naturalLanguageInput.value }
+    })
     
-    // Simple rule-based demo parsing
+    parsedResult.value = response.activity
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'Failed to parse activity'
+    
+    // Fallback demo parsing for display purposes
     const input = naturalLanguageInput.value.toLowerCase()
     
     if (input.includes('drove') || input.includes('car')) {
@@ -76,8 +87,6 @@ async function demoParseActivity() {
         confidence: 0.4
       }
     }
-  } catch (err) {
-    error.value = 'Demo parsing failed'
   } finally {
     isLoading.value = false
   }
@@ -91,6 +100,12 @@ async function demoParseActivity() {
       <p class="text-muted-foreground max-w-2xl mx-auto">
         Experience natural language activity input and personalized sustainability tips powered by AI.
       </p>
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-3xl mx-auto">
+        <p class="text-sm text-blue-700">
+          <strong>Demo Mode:</strong> This page demonstrates the AI features without requiring login. 
+          In the full application, these features are integrated into the activity input and tips pages.
+        </p>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">

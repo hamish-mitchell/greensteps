@@ -7,7 +7,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   // Allowed routes without completion
   // Routes that should be accessible even if onboarding not yet complete OR during auth flows
-  const allow = new Set(['/onboarding', '/login', '/confirm', '/reset-password']);
+  const allow = new Set(['/onboarding', '/login', '/confirm', '/reset-password', '/ai-demo']);
   if (allow.has(to.path)) return;
 
   const { onboardingCompleted, ensureLoaded } = useOnboardingCompleted();
