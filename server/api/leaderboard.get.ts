@@ -1,6 +1,10 @@
-// Server API endpoint to provide leaderboard data with display names from auth.users
-// Scope: global | friends
-// Returns: { entries: { id, display_name, avatar_url, total_points, rank, you }[] }
+/**
+ * Leaderboard API Endpoint - Ranking Data Service
+ * 
+ * Provides leaderboard data with user display names from auth.users.
+ * Supports both global and friends scope filtering.
+ * Returns ranked entries with points, avatars, and user identification.
+ */
 import { defineEventHandler, getQuery, createError } from 'h3'
 // Nuxt Supabase server helper
 // eslint-disable-next-line import/no-unresolved

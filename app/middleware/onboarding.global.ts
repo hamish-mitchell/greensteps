@@ -1,5 +1,8 @@
-/*
- * Redirect a logged in user to "/onboarding" until they complete it
+/**
+ * Onboarding Middleware - User Setup Flow
+ * 
+ * Redirects authenticated users to onboarding page until they complete
+ * the initial setup process. Allows access to auth-related routes.
  */
 export default defineNuxtRouteMiddleware(async (to) => {
   const supabaseUser = useSupabaseUser();

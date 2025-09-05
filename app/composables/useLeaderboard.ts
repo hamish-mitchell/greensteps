@@ -1,3 +1,9 @@
+/**
+ * Leaderboard Composable - User Ranking System
+ * 
+ * Manages leaderboard data fetching and display functionality.
+ * Handles user rankings, points, and friend comparisons.
+ */
 export interface LeaderboardEntry {
   id: string
   display_name: string

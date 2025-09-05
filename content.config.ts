@@ -1,3 +1,9 @@
+/**
+ * Content Configuration - Nuxt Content Setup
+ * 
+ * Defines collection schemas for structured content management.
+ * Currently configured for articles with author and category metadata.
+ */
 import { defineContentConfig } from '@nuxt/content'
 
 export default defineContentConfig({

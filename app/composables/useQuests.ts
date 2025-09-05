@@ -1,3 +1,9 @@
+/**
+ * Quests Composable - Gamification System
+ * 
+ * Manages user quests, challenges, and progress tracking.
+ * Handles quest completion, rewards, and progress updates.
+ */
 import { useEventBus } from "@vueuse/core";
 
 export interface UserQuest {

@@ -1,3 +1,10 @@
+/**
+ * Emissions Calculation API - Carbon Footprint Processing
+ * 
+ * Server endpoint that calculates carbon emissions from user activities.
+ * Processes different activity types (transport, electricity, food, waste) 
+ * and returns emission values in kg CO2 equivalent.
+ */
 import type { AustralianState } from "../types/australianState";
 import type { FoodCategory } from "../types/foodCategory";
 

@@ -1,3 +1,9 @@
+/**
+ * Nuxt Configuration - Greensteps Carbon Tracking App
+ * 
+ * Main configuration file for the Nuxt 4 application with SSR/SPA hybrid mode.
+ * Configures Supabase authentication, Tailwind CSS, shadcn/ui components, and fonts.
+ */
 import tailwindcss from "@tailwindcss/vite";
 
 // Nuxt configuration (hybrid SSR / SPA)

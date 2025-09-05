@@ -1,3 +1,9 @@
+<!--
+  App Shell Layout - Main Application Layout
+  
+  Primary layout component that provides the sidebar navigation,
+  breadcrumb navigation, and content container for authenticated pages.
+-->
 <script setup lang="ts">
 // Lazy import sidebar to reduce synchronous work on navigation.
 const AppSidebar = defineAsyncComponent(() => import('@/components/AppSidebar.vue'));
