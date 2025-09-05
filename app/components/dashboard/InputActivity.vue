@@ -107,8 +107,14 @@ async function parseNaturalLanguage() {
         form.wasteKg = parsed.waste.amountKg;
     }
     
-    // Switch to manual mode to show the form
-    inputMode.value = 'manual';
+    // Auto-submit if confidence > 60%, otherwise show form for review
+    if (parsed.confidence > 0.6) {
+        // Auto-submit with high confidence
+        onSave();
+    } else {
+        // Switch to manual mode to show the form for review
+        inputMode.value = 'manual';
+    }
 }
 
 // Reset form when switching modes
