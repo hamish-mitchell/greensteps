@@ -26,8 +26,9 @@ import Card from '~/components/ui/card/Card.vue'
 import Button from '~/components/ui/button/Button.vue'
 import Badge from '~/components/ui/badge/Badge.vue'
 import Separator from '~/components/ui/separator/Separator.vue'
-import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
-import ErrorState from '@/components/ui/ErrorState.vue'
+// Enhanced UI Components (available for future use)
+// import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
+// import ErrorState from '@/components/ui/ErrorState.vue'
 
 // Chart.js type imports for TypeScript support
 import type { Chart as ChartType, TooltipItem } from 'chart.js'

@@ -1,3 +1,39 @@
+<!--
+/**
+ * AutoForm Component - Dynamic Form Generation from Zod Schemas
+ * 
+ * A powerful form component that automatically generates form fields, validation,
+ * and UI elements from Zod schema definitions. This component is used throughout
+ * GreenSteps for consistent form handling while reducing boilerplate code.
+ * 
+ * Key Features:
+ * - Automatic field type inference from Zod schemas
+ * - Built-in validation with real-time feedback
+ * - Customizable field configurations and styling
+ * - Support for complex field dependencies and conditional logic
+ * - Accessibility-compliant form controls
+ * - Integration with the design system components
+ * 
+ * Supported Field Types:
+ * - Text inputs (string, email, url, etc.)
+ * - Number inputs with validation
+ * - Date/time pickers
+ * - Select dropdowns and radio groups
+ * - Checkboxes and toggle switches
+ * - File upload components
+ * - Array fields for dynamic lists
+ * - Nested object fields
+ * 
+ * @component AutoForm
+ * @example
+ * <AutoForm 
+ *   :schema="userProfileSchema" 
+ *   :field-config="fieldCustomizations"
+ *   @submit="handleFormSubmit" 
+ * />
+ */
+-->
+
 <script setup lang="ts" generic="T extends ZodObjectOrWrapped">
 import type { FormContext, GenericObject } from "vee-validate";
 import type { z, ZodAny } from "zod";
@@ -15,13 +51,23 @@ import {
     type ZodObjectOrWrapped,
 } from "./utils";
 
+/**
+ * Component props interface
+ */
 const props = defineProps<{
+    /** Zod schema defining the form structure and validation rules */
     schema: T;
+    /** Optional vee-validate form context for external form control */
     form?: FormContext<GenericObject>;
+    /** Field-specific configuration overrides for customization */
     fieldConfig?: Config<z.infer<T>>;
+    /** Inter-field dependencies for conditional logic */
     dependencies?: Dependency<z.infer<T>>[];
 }>();
 
+/**
+ * Component events
+ */
 const emits = defineEmits<{
     submit: [event: z.infer<T>];
 }>();

@@ -32,10 +32,10 @@ import type { } from '@/composables/useActivities';
 import { useDashboardSummary } from '@/composables/useDashboardSummary';
 import { useQuests } from '@/composables/useQuests';
 
-// Enhanced UI Components
-import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
-import ErrorState from '@/components/ui/ErrorState.vue';
-import StatsCard from '@/components/ui/StatsCard.vue';
+// Enhanced UI Components (available for future use)
+// import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
+// import ErrorState from '@/components/ui/ErrorState.vue';
+// import StatsCard from '@/components/ui/StatsCard.vue';
 
 // Page metadata configuration
 definePageMeta({

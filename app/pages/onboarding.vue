@@ -1,3 +1,30 @@
+<!--
+/**
+ * User Onboarding Flow - Profile Setup and Personalization
+ * 
+ * A multi-step onboarding process that collects essential user information
+ * to personalize their GreenSteps experience. This includes household details,
+ * transportation habits, and lifestyle preferences that help calculate
+ * personalized emission baselines and recommendations.
+ * 
+ * Features:
+ * - Progressive multi-step form with validation
+ * - Visual progress indicator
+ * - Baseline emission calculation based on inputs
+ * - Skip options for optional fields
+ * - Integration with user profile system
+ * - Smooth transitions between steps
+ * 
+ * The collected data is used to:
+ * - Calculate personalized emission baselines
+ * - Suggest relevant quests and challenges
+ * - Provide tailored sustainability recommendations
+ * - Compare progress against similar user profiles
+ * 
+ * @page Onboarding
+ */
+-->
+
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue';
 import { Button } from '@/components/ui/button';
@@ -6,6 +33,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Home, Car, Leaf, CheckCircle2 } from 'lucide-vue-next';
 
+// Page configuration
 definePageMeta({
   layout: 'app-shell',
   tagline: 'Tell us a little about your household & lifestyle so we can personalise your impact.'
@@ -18,15 +46,21 @@ const submitting = ref(false);
 const error = ref<string|null>(null);
 const step = ref(0);
 
-// Ordered steps definition (with icons)
+/**
+ * Onboarding step definitions with icons and descriptions
+ * Each step collects specific category of user information
+ */
 const steps = [
   { key: 'household', title: 'Household', description: 'Where & how you live', icon: Home },
   { key: 'transport', title: 'Transport', description: 'How you get around', icon: Car },
-  { key: 'lifestyle', title: 'Lifestyle', description: 'Daily habits & habits', icon: Leaf },
+  { key: 'lifestyle', title: 'Lifestyle', description: 'Daily habits & preferences', icon: Leaf },
   { key: 'review', title: 'Review', description: 'Check & finish', icon: CheckCircle2 }
 ];
 
-// Form state reflecting profiles columns we care about
+/**
+ * Form state interface matching the user profiles table structure
+ * Collects data needed for baseline emission calculations and personalization
+ */
 interface FormState {
   household_size?: number;
   home_type: string;
