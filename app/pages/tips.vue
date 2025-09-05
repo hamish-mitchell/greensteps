@@ -1,3 +1,9 @@
+<!--
+  Tips Page - Environmental Education Content
+  
+  Displays curated environmental tips and educational articles.
+  Features filtering by category and markdown content rendering.
+-->
 <script setup lang="ts">
 // Page meta for SEO and layout
 definePageMeta({

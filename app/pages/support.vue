@@ -1,3 +1,9 @@
+<!--
+  Support Page - User Help and Contact
+  
+  Provides user support interface with contact form and help resources.
+  Allows users to submit feedback and get assistance with the application.
+-->
 <script setup lang="ts">
 definePageMeta({
   layout: 'app-shell',

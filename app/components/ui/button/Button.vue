@@ -1,3 +1,9 @@
+<!--
+  Button Component - Interactive UI Element
+  
+  Reusable button component with multiple variants and sizes.
+  Built on shadcn/ui design system with accessibility features.
+-->
 <script setup lang="ts">
 import type { PrimitiveProps } from "reka-ui";
 import type { HTMLAttributes } from "vue";

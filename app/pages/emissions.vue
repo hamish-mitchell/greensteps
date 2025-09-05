@@ -1,3 +1,9 @@
+<!--
+  Emissions Page - Carbon Footprint History
+  
+  Displays user's emission history with filtering options,
+  charts visualization, and detailed activity breakdown.
+-->
 <script setup lang="ts">
 definePageMeta({
   layout: "app-shell",

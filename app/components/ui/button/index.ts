@@ -1,3 +1,9 @@
+/**
+ * Button Component Exports - UI Component Library
+ * 
+ * Exports button component and variant definitions.
+ * Provides class variance authority configuration for different button styles.
+ */
 import type { VariantProps } from "class-variance-authority";
 import { cva } from "class-variance-authority";
 

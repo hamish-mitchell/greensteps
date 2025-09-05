@@ -1,3 +1,9 @@
+<!--
+  Settings Page - Account Configuration  
+  
+  User account settings and preferences management.
+  Allows users to update profile information and app configuration.
+-->
 <template>
   <app-shell>
     <div class="flex min-h-screen">

@@ -1,3 +1,9 @@
+<!--
+  Sign Up Form Component - User Registration
+  
+  Form component for new user registration with validation.
+  Includes email/password fields, terms acceptance, and error handling.
+-->
 <script setup lang="ts">
 // Component imports
 import { Button } from "@/components/ui/button";

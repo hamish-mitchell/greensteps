@@ -1,3 +1,9 @@
+<!--
+  Leaderboard Page - Competitive Rankings
+  
+  Displays user rankings and competitive scoring.
+  Shows global and friend leaderboards with user positions and points.
+-->
 <script setup lang="ts">
 definePageMeta({
   layout: "app-shell",
