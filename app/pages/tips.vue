@@ -14,6 +14,7 @@ import Avatar from '~/components/ui/avatar/Avatar.vue'
 import AvatarImage from '~/components/ui/avatar/AvatarImage.vue'
 import AvatarFallback from '~/components/ui/avatar/AvatarFallback.vue'
 import Separator from '~/components/ui/separator/Separator.vue'
+import PersonalizedTips from '~/components/dashboard/PersonalizedTips.vue'
 
 type Article = {
   id: number
@@ -182,6 +183,9 @@ async function copyLink(id: number) {
 
       <!-- Sidebar -->
       <div class="space-y-6">
+        <!-- Personalized Tips -->
+        <PersonalizedTips />
+        
         <Card class="p-4 space-y-4">
           <h2 class="text-sm font-medium flex items-center gap-2">
             Browse by Category

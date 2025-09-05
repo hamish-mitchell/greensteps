@@ -21,7 +21,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { reactive, computed, watch } from "vue";
+import { Textarea } from "@/components/ui/textarea";
+import { reactive, computed, watch, ref } from "vue";
 
 // Types
 type Category = 'Food' | 'Transport' | 'Electricity' | 'Waste';
@@ -32,6 +33,11 @@ type TransportMode = 'Car' | 'Walk/Ride' | 'Bus' | 'Train' | 'Tram' | 'Plane';
 const categories: Category[] = ['Food','Transport','Electricity','Waste'];
 const foodSubs: FoodSub[] = ['Red Meat','White Meat','Dairy','Baked Goods','Fruit/Veg.'];
 const transportModes: TransportMode[] = ['Car','Walk/Ride','Bus','Train','Tram','Plane'];
+
+// Input mode
+const inputMode = ref<'manual' | 'ai'>('manual');
+const naturalLanguageInput = ref('');
+const { parseActivity, isLoading: aiLoading, error: aiError } = useAI();
 
 // Form state
 const form = reactive({
@@ -69,6 +75,62 @@ const canSave = computed(() => {
     if (isElectricity.value) return !!form.electricityKWh && form.electricityKWh > 0;
     if (isWaste.value) return !!form.wasteKg && form.wasteKg > 0;
     return false;
+});
+
+// AI parsing function
+async function parseNaturalLanguage() {
+    if (!naturalLanguageInput.value.trim()) return;
+    
+    const parsed = await parseActivity(naturalLanguageInput.value);
+    if (!parsed) return;
+    
+    // Populate form with parsed data
+    form.category = parsed.category as Category;
+    
+    if (parsed.food) {
+        form.foodSubcategory = parsed.food.subcategory as FoodSub;
+        form.amountKg = parsed.food.amountKg;
+    }
+    
+    if (parsed.transport) {
+        form.transportMode = parsed.transport.mode as TransportMode;
+        const minutes = parsed.transport.durationMinutes;
+        form.durationHours = Math.floor(minutes / 60);
+        form.durationMinutes = minutes % 60;
+    }
+    
+    if (parsed.electricity) {
+        form.electricityKWh = parsed.electricity.kWh;
+    }
+    
+    if (parsed.waste) {
+        form.wasteKg = parsed.waste.amountKg;
+    }
+    
+    // Auto-submit if confidence > 60%, otherwise show form for review
+    if (parsed.confidence > 0.6) {
+        // Auto-submit with high confidence
+        onSave();
+    } else {
+        // Switch to manual mode to show the form for review
+        inputMode.value = 'manual';
+    }
+}
+
+// Reset form when switching modes
+watch(inputMode, (newMode) => {
+    if (newMode === 'ai') {
+        // Reset form
+        form.category = '';
+        form.foodSubcategory = '';
+        form.transportMode = '';
+        form.amountKg = null;
+        form.durationHours = 0;
+        form.durationMinutes = 0;
+        form.electricityKWh = null;
+        form.wasteKg = null;
+        naturalLanguageInput.value = '';
+    }
 });
 
 type ActivityPayload = {
@@ -122,6 +184,57 @@ function onSave() {
                 </SheetDescription>
             </SheetHeader>
             <div class="p-4 space-y-6">
+                <!-- Input Mode Selector -->
+                <div class="flex gap-2 p-1 bg-muted rounded-lg">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        :class="{ 'bg-background shadow-sm': inputMode === 'manual' }"
+                        @click="inputMode = 'manual'"
+                        class="flex-1"
+                    >
+                        📝 Manual Entry
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        :class="{ 'bg-background shadow-sm': inputMode === 'ai' }"
+                        @click="inputMode = 'ai'"
+                        class="flex-1"
+                    >
+                        🤖 AI Assistant
+                    </Button>
+                </div>
+
+                <!-- Natural Language Input -->
+                <div v-if="inputMode === 'ai'" class="space-y-4">
+                    <div class="space-y-2">
+                        <Label class="text-sm font-medium">Describe your activity</Label>
+                        <Textarea
+                            v-model="naturalLanguageInput"
+                            placeholder="e.g., 'I drove to work for 30 minutes' or 'Had a beef burger for lunch'"
+                            class="min-h-[80px]"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            Describe what you did in plain English and I'll help categorize it for you.
+                        </p>
+                    </div>
+                    
+                    <Button
+                        @click="parseNaturalLanguage"
+                        :disabled="!naturalLanguageInput.trim() || aiLoading"
+                        class="w-full"
+                    >
+                        {{ aiLoading ? '🔄 Processing...' : '✨ Parse Activity' }}
+                    </Button>
+                    
+                    <div v-if="aiError" class="text-sm text-red-600 p-2 bg-red-50 rounded">
+                        {{ aiError }}
+                    </div>
+                </div>
+
+                <!-- Manual Entry Form (existing) -->
+                <div v-if="inputMode === 'manual'" class="space-y-6">
                 <!-- Category -->
                 <div class="space-y-2">
                     <Label class="text-sm font-medium">Category</Label>
@@ -276,6 +389,7 @@ function onSave() {
                     <div v-if="isWaste">
                         <strong>Waste:</strong> {{ form.wasteKg || 0 }} kg
                     </div>
+                </div>
                 </div>
             </div>
             <SheetFooter>
