@@ -7,6 +7,18 @@ export interface UserBadge {
   icon: string | null;
 }
 
+interface BadgeDbRow {
+  badge_id: number;
+  awarded_at: string;
+  badges: {
+    id: number;
+    code: string;
+    name: string;
+    description: string | null;
+    icon: string | null;
+  };
+}
+
 export function useBadges() {
   const supabase = useSupabaseClient();
   const user = useSupabaseUser();
@@ -26,7 +38,7 @@ export function useBadges() {
     if (dbError) {
       error.value = dbError.message;
     } else if (data) {
-      badges.value = data.map((r: any) => ({
+      badges.value = (data as BadgeDbRow[]).map((r) => ({
         badge_id: r.badge_id,
         awarded_at: r.awarded_at,
         code: r.badges.code,

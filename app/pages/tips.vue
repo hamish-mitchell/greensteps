@@ -1,10 +1,5 @@
 <script setup lang="ts">
 // Page meta for SEO and layout
-definePageMeta({
-  layout: "app-shell",
-  tagline: "Tips & Tricks to help you help the planet.",
-})
-
 import { ref, computed } from 'vue'
 import { marked } from 'marked'
 
@@ -16,6 +11,11 @@ import Avatar from '~/components/ui/avatar/Avatar.vue'
 import AvatarImage from '~/components/ui/avatar/AvatarImage.vue'
 import AvatarFallback from '~/components/ui/avatar/AvatarFallback.vue'
 import Separator from '~/components/ui/separator/Separator.vue'
+
+definePageMeta({
+  layout: "app-shell",
+  tagline: "Tips & Tricks to help you help the planet.",
+})
 
 interface Article {
   id: number
@@ -180,7 +180,7 @@ async function copyLink(id: number) {
                 <p class="text-sm text-muted-foreground line-clamp-2">{{ a.excerpt }}</p>
                 <transition name="fade">
                   <div v-if="expandedArticleId === a.id" class="mt-3 text-sm text-foreground">
-                    <div v-if="a.html" class="prose max-w-none prose-table:table-auto prose-td:border prose-th:border prose-td:px-2 prose-th:px-2 prose-td:py-1 prose-th:py-1" v-html="a.html"></div>
+                    <div v-if="a.html" class="prose max-w-none prose-table:table-auto prose-td:border prose-th:border prose-td:px-2 prose-th:px-2 prose-td:py-1 prose-th:py-1" v-html="a.html"/>
                     <p v-else class="text-muted-foreground">No additional content available.</p>
 
                     <div class="flex items-center justify-between mt-3">
@@ -194,14 +194,14 @@ async function copyLink(id: number) {
 
                       <div class="flex items-center gap-2">
                         <button
-                          @click.stop="copyLink(a.id)"
                           class="text-xs px-2 py-1 rounded hover:bg-muted/30"
+                          @click.stop="copyLink(a.id)"
                         >
                           Copy link
                         </button>
                         <button
-                          @click.stop="toggleExpand(a.id)"
                           class="text-xs px-2 py-1 rounded hover:bg-muted/30"
+                          @click.stop="toggleExpand(a.id)"
                         >
                           Close
                         </button>
@@ -243,7 +243,7 @@ async function copyLink(id: number) {
 
         <Card class="overflow-hidden">
           <div class="aspect-[16/7] w-full bg-muted">
-            <img v-if="tipOfDay.image" :src="tipOfDay.image" alt="" class="h-full w-full object-cover" />
+            <img v-if="tipOfDay.image" :src="tipOfDay.image" alt="" class="h-full w-full object-cover" >
           </div>
           <div class="p-4 space-y-2">
             <div class="flex items-center gap-2 text-sm">

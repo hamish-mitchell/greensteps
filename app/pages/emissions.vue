@@ -1,9 +1,4 @@
 <script setup lang="ts">
-definePageMeta({
-  layout: "app-shell",
-  tagline: "Track and understand your carbon footprint.",
-})
-
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 
 import Card from '~/components/ui/card/Card.vue'
@@ -11,11 +6,12 @@ import Button from '~/components/ui/button/Button.vue'
 import Badge from '~/components/ui/badge/Badge.vue'
 import Separator from '~/components/ui/separator/Separator.vue'
 
-// Breadcrumb components
-import Breadcrumb from '~/components/ui/breadcrumb/Breadcrumb.vue'
-import BreadcrumbItem from '~/components/ui/breadcrumb/BreadcrumbItem.vue'
-import BreadcrumbList from '~/components/ui/breadcrumb/BreadcrumbList.vue'
-import BreadcrumbPage from '~/components/ui/breadcrumb/BreadcrumbPage.vue'
+import type { Chart as ChartType, TooltipItem } from 'chart.js'
+
+definePageMeta({
+  layout: "app-shell",
+  tagline: "Track and understand your carbon footprint.",
+})
 
 // Charts commented out
 // import ChartBar from '~/components/ui/chart-bar/ChartBar.vue'
@@ -128,9 +124,7 @@ const categoryBreakdown = computed(() => {
 // ---- Chart.js Integration ----
 const barCanvas = ref<HTMLCanvasElement | null>(null)
 const donutCanvas = ref<HTMLCanvasElement | null>(null)
-
-import type { Chart as ChartType } from 'chart.js'
-let ChartLib: any // will hold the Chart constructor after dynamic import
+let ChartLib: typeof ChartType | null = null // will hold the Chart constructor after dynamic import
 let barChart: ChartType | null = null
 let donutChart: ChartType | null = null
 
@@ -179,7 +173,7 @@ function buildBarChart() {
       },
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: (ctx: any) => `${ctx.parsed.y} kg` } }
+        tooltip: { callbacks: { label: (ctx: TooltipItem<'bar'>) => `${ctx.parsed.y} kg` } }
       }
     }
   })
@@ -209,7 +203,7 @@ function buildDonutChart() {
       cutout: '60%',
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: (ctx: any) => `${ctx.label}: ${ctx.parsed} %` } }
+        tooltip: { callbacks: { label: (ctx: TooltipItem<'doughnut'>) => `${ctx.label}: ${ctx.parsed} %` } }
       }
     }
   })
@@ -278,7 +272,7 @@ function getCssVar(name: string, fallback: string) {
             <Button size="sm" variant="ghost" class="h-7 text-xs">View Detail</Button>
           </div>
           <div class="flex-1 h-[260px] relative">
-            <canvas ref="barCanvas" aria-label="Monthly emissions bar chart" role="img"></canvas>
+            <canvas ref="barCanvas" aria-label="Monthly emissions bar chart" role="img"/>
           </div>
         </Card>
 
@@ -287,12 +281,12 @@ function getCssVar(name: string, fallback: string) {
           <h2 class="text-sm font-medium text-muted-foreground uppercase mb-4">Emissions Breakdown</h2>
           <div class="flex items-center gap-4">
             <div class="w-40 h-40 relative">
-              <canvas ref="donutCanvas" aria-label="Category emissions breakdown" role="img"></canvas>
+              <canvas ref="donutCanvas" aria-label="Category emissions breakdown" role="img"/>
             </div>
             <ul class="flex-1 space-y-1 text-xs">
               <li v-for="c in categoryBreakdown" :key="c.label" class="flex items-center justify-between">
                 <span class="flex items-center gap-2">
-                  <span class="h-2 w-2 rounded-full" :style="{ background: c.color }"></span>{{ c.label }}
+                  <span class="h-2 w-2 rounded-full" :style="{ background: c.color }"/>{{ c.label }}
                 </span>
                 <span class="font-medium">{{ c.value }}%</span>
               </li>

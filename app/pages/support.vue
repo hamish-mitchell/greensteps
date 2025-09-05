@@ -1,22 +1,22 @@
 <script setup lang="ts">
-definePageMeta({
-  layout: 'app-shell',
-  tagline: 'Need a hand? Reach out to us.'
-})
-
 import Card from '~/components/ui/card/Card.vue'
 import Button from '~/components/ui/button/Button.vue'
 import Textarea from '~/components/ui/textarea/Textarea.vue'
 import Input from '~/components/ui/input/Input.vue'
 
+definePageMeta({
+  layout: 'app-shell',
+  tagline: 'Need a hand? Reach out to us.'
+})
+
 const config = useRuntimeConfig()
-const supportEmail = (config.public as any)?.SUPPORT_EMAIL || 'support@example.com'
+const supportEmail = (config.public as Record<string, unknown>)?.SUPPORT_EMAIL as string || 'support@example.com'
 
 const name = ref('')
 const email = ref('')
 const message = ref('')
 
-function mailtoHref() {
+function _mailtoHref() {
   const subj = encodeURIComponent('GreenSteps Support Request')
   const body = encodeURIComponent(`Name: ${name.value}\nEmail: ${email.value}\n\n${message.value}`)
   return `mailto:${supportEmail}?subject=${subj}&body=${body}`

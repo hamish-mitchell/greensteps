@@ -114,15 +114,16 @@ export function useActivities() {
         throw new Error('Quantity must be > 0');
       }
 
-      const newId = (typeof crypto !== 'undefined' && (crypto as any).randomUUID)
-        ? (crypto as any).randomUUID()
+      // Note: newId is for reference but not used in current implementation
+      const _newId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
         : Math.random().toString(36).slice(2);
 
       const factorKey = factorKeyFor(raw);
       if (!factorKey) throw new Error('No emission factor key resolved');
 
       // RPC call performs calculation + insert. (Ensure SQL function exists.)
-      const { data, error: dbError } = await (supabase as any)
+      const { data, error: dbError } = await supabase
         .rpc('add_activity', {
           p_factor_key: factorKey,
           p_quantity: quantity,
@@ -134,8 +135,9 @@ export function useActivities() {
 
       if (dbError) throw dbError;
       return data;
-    } catch (e: any) {
-      error.value = e.message || 'Failed to add activity';
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Failed to add activity';
+      error.value = errorMessage;
       return null;
     } finally {
       loading.value = false;

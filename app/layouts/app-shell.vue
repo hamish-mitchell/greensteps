@@ -1,6 +1,5 @@
 <script setup lang="ts">
 // Lazy import sidebar to reduce synchronous work on navigation.
-const AppSidebar = defineAsyncComponent(() => import('@/components/AppSidebar.vue'));
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -17,6 +16,7 @@ import {
 } from "@/components/ui/sidebar";
 
 import { capitalise } from "@/utils/capitalise";
+const AppSidebar = defineAsyncComponent(() => import('@/components/AppSidebar.vue'));
 
 // Get the current route for breadcrumb display
 const route = useRoute();

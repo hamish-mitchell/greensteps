@@ -24,8 +24,9 @@ export function useLeaderboard(initialScope: LeaderboardScope = 'global') {
     try {
       const res = await $fetch<{ scope: string; entries: LeaderboardEntry[] }>(`/api/leaderboard?scope=${scope.value}`)
       entries.value = res.entries
-    } catch (e: any) {
-      error.value = e.message || 'Failed to load leaderboard'
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Failed to load leaderboard'
+      error.value = errorMessage
     } finally {
       loading.value = false
     }

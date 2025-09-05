@@ -5,6 +5,97 @@
 // 2. A query param (?code=...&type=recovery) that must be exchanged via exchangeCodeForSession
 // We establish the session (if not already) and allow user to set a new password.
 
+</script>
+
+<template>
+  <div class="grid min-h-svh lg:grid-cols-2">
+    <!-- Left column (form) -->
+    <div class="flex flex-col gap-4 p-6 md:p-10">
+      <div class="flex justify-center gap-2 md:justify-start fixed">
+        <a href="/" class="flex items-center gap-2 font-medium">
+          <svg width="160" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 20C0 12.5231 0 8.78461 1.60769 6C2.66091 4.17577 4.17577 2.66091 6 1.60769C8.78461 0 12.5231 0 20 0C27.4769 0 31.2154 0 34 1.60769C35.8242 2.66091 37.3391 4.17577 38.3923 6C40 8.78461 40 12.5231 40 20C40 27.4769 40 31.2154 38.3923 34C37.3391 35.8242 35.8242 37.3391 34 38.3923C31.2154 40 27.4769 40 20 40C12.5231 40 8.78461 40 6 38.3923C4.17577 37.3391 2.66091 35.8242 1.60769 34C0 31.2154 0 27.4769 0 20Z" fill="#00DC33" />
+          </svg>
+        </a>
+      </div>
+      <div class="flex flex-1 h-full items-center justify-center">
+        <div class="w-full max-w-sm">
+          <Card class="mx-auto max-w-sm border-none shadow-none">
+            <CardHeader>
+              <CardTitle class="text-2xl">Set a new password</CardTitle>
+              <CardDescription>
+                Choose a strong password to finish resetting your account.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div v-if="success" class="space-y-4 text-center">
+                <p class="text-sm text-green-600">Password updated successfully. Redirecting…</p>
+                <Button variant="outline" @click="router.push('/login')">Go now</Button>
+              </div>
+              <form v-else class="grid gap-4" @submit.prevent="handleUpdatePassword">
+                <div v-if="!sessionReady && !error" class="text-sm text-muted-foreground">
+                  Validating recovery link…
+                </div>
+                <div v-if="sessionReady" class="grid gap-2">
+                  <Label for="password">New Password</Label>
+                  <Input id="password" v-model="password" type="password" placeholder="••••••••" required minlength="8" />
+                </div>
+                <div v-if="sessionReady" class="grid gap-2">
+                  <Label for="confirm">Confirm Password</Label>
+                  <Input id="confirm" v-model="confirmPassword" type="password" placeholder="••••••••" required minlength="8" />
+                </div>
+                <Button type="submit" class="w-full flex items-center justify-center" :disabled="loading || !sessionReady">
+                  <svg
+                    v-if="loading"
+                    class="animate-spin mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                  </svg>
+                  <span>Update password</span>
+                </Button>
+                <div v-if="error" class="text-red-500 text-sm mt-2 text-center">{{ error }}</div>
+                <div v-if="!error && sessionReady" class="text-xs text-muted-foreground text-center">
+                  After updating you'll be redirected to sign in.
+                </div>
+              </form>
+              <div v-if="error && !sessionReady" class="mt-4 text-center text-sm">
+                <NuxtLink to="/login" class="underline">Request a new link</NuxtLink>
+              </div>
+            </CardContent>
+          </Card>
+            <div v-if="debug" class="mt-4 text-xs bg-black/5 p-3 rounded">
+              <div class="font-medium">Debug</div>
+              <div class="truncate">href: {{ debugInfo.href }}</div>
+              <div>branch: {{ debugInfo.branch }}</div>
+              <div>code: {{ debugInfo.code }}</div>
+              <div>token: {{ debugInfo.token }}</div>
+              <div>token_type: {{ debugInfo.token_type }}</div>
+              <div class="truncate">hash: {{ debugInfo.hash }}</div>
+            </div>
+        </div>
+      </div>
+    </div>
+    <!-- Right column (image) -->
+    <div class="relative hidden bg-muted lg:block">
+      <img
+        src="/placeholder.svg"
+        alt="Image"
+        class="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+      >
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+// Import UI components (separate <script> so <script setup> remains clean)
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 const supabase = useSupabaseClient();
 const router = useRouter();
 
@@ -71,7 +162,7 @@ async function establishSession() {
       }
       // If no email, fall through to other mechanisms
     }
-  } catch (e) {
+  } catch {
     // ignore parse errors
   }
 
@@ -129,7 +220,7 @@ onMounted(() => {
     const u = new URL(window.location.href);
     debug.value = u.hostname.includes('localhost') || u.searchParams.get('debug') === 'true';
     debugInfo.value.href = window.location.href;
-  } catch (e) {
+  } catch {
     debug.value = false;
   }
   establishSession();
@@ -164,97 +255,6 @@ async function handleUpdatePassword() {
   // // Redirect after short delay
   // setTimeout(() => router.push("/login"), 2500);
 }
-</script>
-
-<template>
-  <div class="grid min-h-svh lg:grid-cols-2">
-    <!-- Left column (form) -->
-    <div class="flex flex-col gap-4 p-6 md:p-10">
-      <div class="flex justify-center gap-2 md:justify-start fixed">
-        <a href="/" class="flex items-center gap-2 font-medium">
-          <svg width="160" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 20C0 12.5231 0 8.78461 1.60769 6C2.66091 4.17577 4.17577 2.66091 6 1.60769C8.78461 0 12.5231 0 20 0C27.4769 0 31.2154 0 34 1.60769C35.8242 2.66091 37.3391 4.17577 38.3923 6C40 8.78461 40 12.5231 40 20C40 27.4769 40 31.2154 38.3923 34C37.3391 35.8242 35.8242 37.3391 34 38.3923C31.2154 40 27.4769 40 20 40C12.5231 40 8.78461 40 6 38.3923C4.17577 37.3391 2.66091 35.8242 1.60769 34C0 31.2154 0 27.4769 0 20Z" fill="#00DC33" />
-          </svg>
-        </a>
-      </div>
-      <div class="flex flex-1 h-full items-center justify-center">
-        <div class="w-full max-w-sm">
-          <Card class="mx-auto max-w-sm border-none shadow-none">
-            <CardHeader>
-              <CardTitle class="text-2xl">Set a new password</CardTitle>
-              <CardDescription>
-                Choose a strong password to finish resetting your account.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div v-if="success" class="space-y-4 text-center">
-                <p class="text-sm text-green-600">Password updated successfully. Redirecting…</p>
-                <Button variant="outline" @click="router.push('/login')">Go now</Button>
-              </div>
-              <form v-else class="grid gap-4" @submit.prevent="handleUpdatePassword">
-                <div v-if="!sessionReady && !error" class="text-sm text-muted-foreground">
-                  Validating recovery link…
-                </div>
-                <div class="grid gap-2" v-if="sessionReady">
-                  <Label for="password">New Password</Label>
-                  <Input id="password" v-model="password" type="password" placeholder="••••••••" required minlength="8" />
-                </div>
-                <div class="grid gap-2" v-if="sessionReady">
-                  <Label for="confirm">Confirm Password</Label>
-                  <Input id="confirm" v-model="confirmPassword" type="password" placeholder="••••••••" required minlength="8" />
-                </div>
-                <Button type="submit" class="w-full flex items-center justify-center" :disabled="loading || !sessionReady">
-                  <svg
-                    v-if="loading"
-                    class="animate-spin mr-2 h-4 w-4 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                  </svg>
-                  <span>Update password</span>
-                </Button>
-                <div v-if="error" class="text-red-500 text-sm mt-2 text-center">{{ error }}</div>
-                <div v-if="!error && sessionReady" class="text-xs text-muted-foreground text-center">
-                  After updating you'll be redirected to sign in.
-                </div>
-              </form>
-              <div v-if="error && !sessionReady" class="mt-4 text-center text-sm">
-                <NuxtLink to="/login" class="underline">Request a new link</NuxtLink>
-              </div>
-            </CardContent>
-          </Card>
-            <div v-if="debug" class="mt-4 text-xs bg-black/5 p-3 rounded">
-              <div class="font-medium">Debug</div>
-              <div class="truncate">href: {{ debugInfo.href }}</div>
-              <div>branch: {{ debugInfo.branch }}</div>
-              <div>code: {{ debugInfo.code }}</div>
-              <div>token: {{ debugInfo.token }}</div>
-              <div>token_type: {{ debugInfo.token_type }}</div>
-              <div class="truncate">hash: {{ debugInfo.hash }}</div>
-            </div>
-        </div>
-      </div>
-    </div>
-    <!-- Right column (image) -->
-    <div class="relative hidden bg-muted lg:block">
-      <img
-        src="/placeholder.svg"
-        alt="Image"
-        class="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-      >
-    </div>
-  </div>
-</template>
-
-<script lang="ts">
-// Import UI components (separate <script> so <script setup> remains clean)
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 </script>
 
 <style scoped>

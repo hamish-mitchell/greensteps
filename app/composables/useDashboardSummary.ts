@@ -29,7 +29,7 @@ export function useDashboardSummary() {
     if (!user.value) return;
     loading.value = true;
     error.value = null;
-    const { data: rpcData, error: rpcError } = await (supabase as any).rpc('dashboard_summary');
+    const { data: rpcData, error: rpcError } = await supabase.rpc('dashboard_summary');
     if (rpcError) {
       error.value = rpcError.message;
     } else if (rpcData) {

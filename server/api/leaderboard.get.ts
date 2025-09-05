@@ -1,9 +1,9 @@
 // Server API endpoint to provide leaderboard data with display names from auth.users
 // Scope: global | friends
 // Returns: { entries: { id, display_name, avatar_url, total_points, rank, you }[] }
-import { defineEventHandler, getQuery, createError } from 'h3'
+import { defineEventHandler, getQuery, createError, type H3Event } from 'h3'
 // Nuxt Supabase server helper
-// eslint-disable-next-line import/no-unresolved
+ 
 import { serverSupabaseClient } from '#supabase/server'
 
 interface RawProfile {
@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
       .select('id, total_points, avatar_url, display_name, is_private')
       .in('id', ids)
     if (error) throw createError({ statusCode: 500, statusMessage: error.message })
-    profiles = (data as any[]).filter(p => !p.is_private || p.id === supabaseUser.id)
+    profiles = (data as RawProfile[]).filter(p => !p.is_private || p.id === supabaseUser.id)
   } else {
     const { data, error } = await supabase
       .from('profiles')
@@ -53,7 +53,7 @@ export default defineEventHandler(async (event) => {
       .order('total_points', { ascending: false })
       .limit(50)
     if (error) throw createError({ statusCode: 500, statusMessage: error.message })
-    profiles = (data as any[]).filter(p => !p.is_private || p.id === supabaseUser.id)
+    profiles = (data as RawProfile[]).filter(p => !p.is_private || p.id === supabaseUser.id)
   }
 
   // Sort (friends scope may not have been ordered yet)
@@ -74,7 +74,7 @@ export default defineEventHandler(async (event) => {
 })
 
 // Small helper to require an authenticated user
-async function requireUser(event: any) {
+async function requireUser(event: H3Event) {
   const supabase = await serverSupabaseClient(event)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })

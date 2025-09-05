@@ -30,7 +30,7 @@ export function useOnboardingCompleted() {
         onboardingCompleted.value = !!data.onboarding_completed;
       } else {
         // On error, default to true to avoid blocking normal navigation; log for debugging
-        if (process.dev) console.warn('[onboarding] failed to load status', error);
+        if (import.meta.dev) console.warn('[onboarding] failed to load status', error);
         onboardingCompleted.value = true;
       }
       loadingPromise.value = null;

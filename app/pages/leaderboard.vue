@@ -1,9 +1,4 @@
 <script setup lang="ts">
-definePageMeta({
-  layout: "app-shell",
-  tagline: "See how you stack up against the competition."
-})
-
 import { ref, computed, watch } from 'vue'
 import { useLeaderboard } from '~/composables/useLeaderboard'
 
@@ -15,9 +10,14 @@ import AvatarImage from '~/components/ui/avatar/AvatarImage.vue'
 import AvatarFallback from '~/components/ui/avatar/AvatarFallback.vue'
 import Separator from '~/components/ui/separator/Separator.vue'
 
+definePageMeta({
+  layout: "app-shell",
+  tagline: "See how you stack up against the competition."
+})
+
 const scope = ref<'friends' | 'global'>('friends')
 const { entries, setScope } = useLeaderboard('friends')
-watch(scope, (s) => setScope(s as any))
+watch(scope, (s) => setScope(s))
 
 const ranked = computed(() => entries.value.map(e => ({
   id: e.id,

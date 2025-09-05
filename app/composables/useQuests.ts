@@ -25,6 +25,22 @@ export interface QuestDefinition {
     points_multiplier: number;
 }
 
+interface UserQuestDbRow {
+    id: number;
+    quest_id: number;
+    progress: number | null;
+    completed: boolean;
+    completed_at: string | null;
+    quests: {
+        name: string;
+        description: string | null;
+        category: string | null;
+        min_value: number | null;
+        max_value: number | null;
+        points_multiplier: number;
+    };
+}
+
 export function useQuests() {
     const supabase = useSupabaseClient();
     const user = useSupabaseUser();
@@ -50,7 +66,7 @@ export function useQuests() {
                 )
                 .eq("user_id", user.value.id);
             if (uqErr) throw uqErr;
-            const userQuests: UserQuest[] = (uq || []).map((r: any) => {
+            const userQuests: UserQuest[] = (uq || []).map((r: UserQuestDbRow) => {
                 const q = r.quests;
                 const denom = q.max_value ?? 0;
                 const pct =
@@ -83,10 +99,11 @@ export function useQuests() {
                 .eq("active", true);
             if (allErr) throw allErr;
             discover.value = (allActive || []).filter(
-                (q: any) => !ownedQuestIds.has(q.id)
+                (q: QuestDefinition) => !ownedQuestIds.has(q.id)
             );
-        } catch (e: any) {
-            error.value = e.message || "Failed to load quests";
+        } catch (e: unknown) {
+            const errorMessage = e instanceof Error ? e.message : "Failed to load quests";
+            error.value = errorMessage;
         } finally {
             loading.value = false;
         }
@@ -94,15 +111,15 @@ export function useQuests() {
 
     async function enroll(questId: number) {
         if (!user.value) return;
-        // Cast to any to avoid type inference issue if generated types aren't present
-        const payload: any = {
+        // Define payload structure for user quest enrollment
+        const payload = {
             user_id: user.value.id,
             quest_id: questId,
             progress: 0,
         };
         const { error: insErr } = await supabase
             .from("user_quests")
-            .insert(payload as any);
+            .insert(payload);
         if (insErr) {
             error.value = insErr.message;
         } else {
@@ -137,7 +154,7 @@ export function useQuests() {
             uq[idx] = target;
             active.value = uq;
         }
-        const { error: updErr } = await (supabase as any)
+        const { error: updErr } = await supabase
             .from("user_quests")
             .update({ progress: newProgress, completed: isCompleted })
             .eq("id", userQuestId)
