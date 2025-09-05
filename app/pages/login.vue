@@ -1,3 +1,9 @@
+<!--
+  Login Page - User Authentication
+  
+  Provides user authentication interface with sign-in, sign-up,
+  and password reset functionality. Handles form switching and validation.
+-->
 <script setup lang="ts">
 // Component imports
 import SignupForm from "@/components/SignupForm.vue";

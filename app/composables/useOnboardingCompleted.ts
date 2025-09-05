@@ -1,7 +1,10 @@
-// Centralised, cached fetch of the user's onboarding completion state.
-// Avoids running a Supabase query on every route navigation.
-// Usage: const { onboardingCompleted, ensureLoaded, markCompleted } = useOnboardingCompleted()
-// Call ensureLoaded() (optionally awaited) when you need the value.
+/**
+ * Onboarding Completion Composable - User Setup State
+ * 
+ * Centralized, cached fetch of the user's onboarding completion state.
+ * Avoids running a Supabase query on every route navigation.
+ * Usage: const { onboardingCompleted, ensureLoaded, markCompleted } = useOnboardingCompleted()
+ */
 
 export function useOnboardingCompleted() {
   const supabaseUser = useSupabaseUser();

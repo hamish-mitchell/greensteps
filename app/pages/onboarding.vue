@@ -1,3 +1,9 @@
+<!--
+  Onboarding Page - User Setup Wizard
+  
+  Guides new users through initial profile setup and configuration.
+  Collects user preferences and baseline data for carbon tracking.
+-->
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue';
 import { Button } from '@/components/ui/button';

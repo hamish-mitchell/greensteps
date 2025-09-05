@@ -1,3 +1,9 @@
+<!--
+  Friends Page - Social Network Management
+  
+  Manages user's social connections, friend requests, and friend activity.
+  Provides interface for adding friends and viewing friend profiles.
+-->
 <script setup lang="ts">
 import { ref } from "vue";
 import { useFriends } from "@/composables/useFriends";

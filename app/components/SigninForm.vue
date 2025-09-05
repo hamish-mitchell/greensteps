@@ -1,3 +1,9 @@
+<!--
+  Sign In Form Component - User Authentication
+  
+  Form component for user sign-in with email and password.
+  Includes validation, error handling, and integration with Supabase auth.
+-->
 <script setup lang="ts">
 // Component imports
 import { Button } from "@/components/ui/button";
