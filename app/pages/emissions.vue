@@ -1,28 +1,57 @@
+<!--
+/**
+ * Emissions Tracking Page - Comprehensive Carbon Footprint Analysis
+ * 
+ * This page provides users with detailed insights into their carbon emissions across
+ * different categories (transport, food, energy, waste). Features include:
+ * 
+ * - Interactive charts showing emissions by category and time
+ * - Detailed activity history with filtering capabilities
+ * - Monthly and yearly trend analysis
+ * - Comparison against personal baselines and targets
+ * - Export functionality for data analysis
+ * 
+ * The page uses Chart.js for visualizations and provides both summary
+ * and granular views of environmental impact data.
+ * 
+ * @page Emissions
+ */
+-->
+
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 
+// UI Components
 import Card from '~/components/ui/card/Card.vue'
 import Button from '~/components/ui/button/Button.vue'
 import Badge from '~/components/ui/badge/Badge.vue'
 import Separator from '~/components/ui/separator/Separator.vue'
+import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
+import ErrorState from '@/components/ui/ErrorState.vue'
 
+// Chart.js type imports for TypeScript support
 import type { Chart as ChartType, TooltipItem } from 'chart.js'
 
+// Page metadata configuration
 definePageMeta({
   layout: "app-shell",
   tagline: "Track and understand your carbon footprint.",
 })
 
-// Charts commented out
+// Chart components are commented out - uncomment when backend is available
 // import ChartBar from '~/components/ui/chart-bar/ChartBar.vue'
 // import ChartDonut from '~/components/ui/chart-donut/ChartDonut.vue'
 
+/**
+ * Interface for historical emissions data
+ * Represents individual emission activities with their impact
+ */
 type HistoryItem = {
   id: number
-  activity: string
-  category: string
-  date: string
-  impactKg: number
+  activity: string // Description of the activity (e.g., "Car journey", "Beef consumption")
+  category: string // Category type (transport, food, energy, waste)
+  date: string // ISO date string
+  impactKg: number // CO2 equivalent in kilograms
   type: 'debit' | 'credit'
 }
 

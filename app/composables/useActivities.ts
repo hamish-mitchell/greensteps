@@ -1,3 +1,17 @@
+/**
+ * Activity tracking composable for GreenSteps application
+ * 
+ * This composable handles the creation and management of user carbon footprint activities.
+ * It processes various types of activities (transport, food, electricity, waste) and 
+ * calculates their associated CO2 emissions using predefined emission factors.
+ * 
+ * @author GreenSteps Team
+ */
+
+/**
+ * Raw form payload structure for activity submissions
+ * Contains category-specific data based on the type of activity being tracked
+ */
 type RawFormPayload = {
   category: string;
   food: null | { subcategory: string; amountKg: number | null };
@@ -6,6 +20,10 @@ type RawFormPayload = {
   waste: null | { amountKg: number | null };
 };
 
+/**
+ * Result structure returned after successfully inserting an activity
+ * Contains calculated emission data and metadata
+ */
 export interface ActivityInsertResult {
   id: string;
   user_id: string;
@@ -13,22 +31,35 @@ export interface ActivityInsertResult {
   category: string;
   quantity: number;
   unit: string;
-  emission_kg: number;
+  emission_kg: number; // Calculated CO2 emissions in kilograms
   meta: Record<string, unknown> | null;
   created_at: string;
 }
 
-// Rough average speeds (km/h) for converting duration to distance – simplistic placeholder.
+/**
+ * Average speeds in km/h for transport modes
+ * Used for converting travel duration to distance for emission calculations
+ * These are rough estimates and could be made more sophisticated in the future
+ */
 const AVG_SPEED_KMH: Record<string, number> = {
   Car: 50,
-  'Walk/Ride': 5,
+  'Walk/Ride': 5, // Walking/cycling (low emissions)
   Bus: 30,
   Train: 60,
   Tram: 25,
-  Plane: 800,
+  Plane: 800, // Cruising speed for air travel
 };
 
-// Map UI selections to emission factor keys stored in emission_factors.
+/**
+ * Maps UI form selections to emission factor keys used in the database
+ * 
+ * This function converts user-friendly category names into the standardized
+ * emission factor keys that correspond to entries in the emission_factors table.
+ * Each category has specific subcategories with their own emission coefficients.
+ * 
+ * @param payload - The raw form data from the activity submission
+ * @returns The emission factor key string, or empty string if no match
+ */
 function factorKeyFor(payload: RawFormPayload): string {
   if (payload.food) {
     switch (payload.food.subcategory) {
@@ -55,14 +86,39 @@ function factorKeyFor(payload: RawFormPayload): string {
   return '';
 }
 
+/**
+ * Utility function to round numbers to 2 decimal places
+ * Used for consistent emission calculations and display
+ */
 function round2(n: number) { return Math.round(n * 100) / 100; }
 
+/**
+ * Activities composable for managing carbon footprint tracking
+ * 
+ * Provides functionality to:
+ * - Submit new activities with automatic emission calculation
+ * - Handle different activity types (transport, food, electricity, waste)
+ * - Validate input data and provide error feedback
+ * - Calculate quantities and units based on activity type
+ */
 export function useActivities() {
   const supabase = useSupabaseClient();
   const user = useSupabaseUser();
   const loading = ref(false);
   const error = ref<string | null>(null);
 
+  /**
+   * Processes and submits a new activity from form data
+   * 
+   * This function:
+   * 1. Validates the input payload and user authentication
+   * 2. Extracts the appropriate quantity and units based on activity type
+   * 3. Determines the emission factor key for database lookup
+   * 4. Calls the backend RPC function to calculate and store the activity
+   * 
+   * @param raw - The form payload containing activity details
+   * @returns ActivityInsertResult on success, null on failure
+   */
   async function addFromForm(raw: RawFormPayload) {
     error.value = null;
     if (!user.value) {

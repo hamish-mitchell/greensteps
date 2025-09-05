@@ -1,15 +1,43 @@
+<!--
+/**
+ * Dashboard Page - Main User Hub for GreenSteps
+ * 
+ * The central dashboard provides users with an overview of their environmental impact,
+ * progress tracking, and quick access to key application features. This page serves
+ * as the primary landing point after login and displays:
+ * 
+ * - Current streak and activity summary
+ * - Badges and achievements earned
+ * - Leaderboard position among friends
+ * - Quick activity input functionality
+ * - Progress towards environmental goals
+ * 
+ * The dashboard is designed to be motivational and informative, encouraging
+ * users to maintain their environmental tracking habits and providing
+ * immediate feedback on their impact.
+ * 
+ * @page Dashboard
+ */
+-->
+
 <script setup lang="ts">
 import { Plus } from 'lucide-vue-next';
 import { ref, computed, watch } from 'vue';
 import { useBadges } from '@/composables/useBadges';
 import { useLeaderboard } from '@/composables/useLeaderboard';
-// Activities composable (client-side prototype)
+// Activities composable for managing user carbon footprint activities
 import { useActivities } from '@/composables/useActivities';
-// Import RawFormPayload type for proper typing of activity submissions
+// Import type definitions for proper TypeScript support
 import type { } from '@/composables/useActivities';
 import { useDashboardSummary } from '@/composables/useDashboardSummary';
 import { useQuests } from '@/composables/useQuests';
 
+// Enhanced UI Components
+import LoadingSpinner from '@/components/ui/LoadingSpinner.vue';
+import ErrorState from '@/components/ui/ErrorState.vue';
+import StatsCard from '@/components/ui/StatsCard.vue';
+
+// Page metadata configuration
 definePageMeta({
     layout: "app-shell",
     tagline: "Overview of your impact and progress.",
@@ -18,9 +46,13 @@ definePageMeta({
 const supabase = useSupabaseClient();
 const user = useSupabaseUser();
 
+// User's current daily activity streak
 const streak = ref(0);
 
-// Define a type for user metadata
+/**
+ * Type definition for user metadata structure
+ * Used for safe access to user profile information
+ */
 type UserMetadata = {
     full_name?: string;
 };
@@ -155,7 +187,7 @@ async function handleSaveActivity(payload: ActivityFormPayload) {
                                         :class="summary && summary.month_saved_kg < 0 ? 'text-red-600' : 'text-green-600'"
                                     >
                                         <template v-if="summary && summary.month_saved_kg < 0">
-                                           Sadly, your days are numbered 🔪🩸
+                                           You can do better! Try some quests to reduce your impact.
                                         </template>
                                         <template v-else>
                                             This month
