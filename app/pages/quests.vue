@@ -1,36 +1,38 @@
 <script setup lang="ts">
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useQuests, type UserQuest, type QuestDefinition } from '~/composables/useQuests'
+import Card from '~/components/ui/card/Card.vue'
+import Button from '~/components/ui/button/Button.vue'
+import Badge from '~/components/ui/badge/Badge.vue'
+import Progress from '~/components/ui/progress/Progress.vue'
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction, AlertDialogTrigger } from '~/components/ui/alert-dialog'
+
 definePageMeta({
 	layout: 'app-shell',
 	tagline: 'Complete challenges, earn points, and make a difference.'
 })
 
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { useQuests } from '~/composables/useQuests'
-import Card from '~/components/ui/card/Card.vue'
-import Button from '~/components/ui/button/Button.vue'
-import Badge from '~/components/ui/badge/Badge.vue'
-import Progress from '~/components/ui/progress/Progress.vue'
+type Quest = UserQuest | QuestDefinition
 
 const activeTab = ref<'active' | 'new' | 'completed'>('active')
 const { active, discover, completed, loading, error, enroll, incrementProgress, cancelQuest } = useQuests()
 // Limit of active quests
 const MAX_ACTIVE = 3
 const canStartMore = computed(() => active.value.length < MAX_ACTIVE)
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction, AlertDialogTrigger } from '~/components/ui/alert-dialog'
 const confirmCancelId = ref<number | null>(null)
 
 // Confetti on quest completion
 let stopListener: (() => void) | null = null
 onMounted(async () => {
 	// Lazy import to keep SSR safe and reduce bundle size on initial load
-	// @ts-ignore - types provided via local ambient or fallback to any
+	// @ts-expect-error - types provided via local ambient or fallback to any
 	const [{ useEventBus }, confettiMod] = await Promise.all([
 		import('@vueuse/core'),
-		// @ts-ignore
+		// @ts-expect-error - dynamic import for confetti library
 		import('canvas-confetti')
 	])
-	const bus = useEventBus<{ quest: any }>('quest:completed')
-	const confetti = confettiMod.default || (confettiMod as any)
+	const bus = useEventBus<{ quest: UserQuest }>('quest:completed')
+	const confetti = confettiMod.default || confettiMod
 	const fire = () => {
 		const duration = 1800
 		const end = Date.now() + duration
@@ -55,7 +57,7 @@ onMounted(async () => {
 			colors
 		})
 	}
-	stopListener = bus.on(({ quest }) => fire())
+	stopListener = bus.on((_payload) => fire())
 })
 onBeforeUnmount(() => { if (stopListener) stopListener(); })
 
@@ -72,34 +74,34 @@ const filteredQuests = computed(() => {
 	return completed.value
 })
 
-function percent(q: any) {
+function percent(q: Quest) {
 	if (!q?.max_value) return 0
 	if (typeof q.percent === 'number') return q.percent
 	if (q.progress != null && q.max_value) return Math.min(100, Math.round((q.progress / q.max_value) * 100))
 	return 0
 }
 
-function questPoints(q: any) {
+function questPoints(q: Quest) {
 	const max = q?.max_value ?? 0
 	const mult = q?.points_multiplier ?? 0
 	return max * mult
 }
 
-function questCategory(q: any) {
+function questCategory(q: Quest) {
 	return q?.category || 'General'
 }
 
-function progressLabel(q: any) {
+function progressLabel(q: Quest) {
 	if (q?.max_value == null) return ''
 	const prog = q.progress ?? 0
 	return `${prog} of ${q.max_value}`
 }
 
-function isUserQuest(q: any): boolean {
+function isUserQuest(q: Quest): q is UserQuest {
 	return q && ('completed' in q || 'progress' in q)
 }
 
-async function startQuest(q: any) {
+async function startQuest(q: QuestDefinition) {
 	// Prevent starting more than the maximum allowed active quests
 	if (!canStartMore.value) return
 	if (!isUserQuest(q)) {
@@ -162,9 +164,9 @@ function tabClass(tab: typeof activeTab.value) {
 							</div>
 							<div class="flex items-center gap-2">
 								<Progress :model-value="percent(q)" class="flex-1" />
-								<Button v-if="!isUserQuest(q)" :disabled="!canStartMore" size="sm" @click="startQuest(q)" :title="canStartMore ? 'Start quest' : `Limit reached: ${MAX_ACTIVE} active quests`">Start</Button>
+								<Button v-if="!isUserQuest(q)" :disabled="!canStartMore" size="sm" :title="canStartMore ? 'Start quest' : `Limit reached: ${MAX_ACTIVE} active quests`" @click="startQuest(q)">Start</Button>
 								<template v-else>
-									<Badge v-if="(q as any).completed" variant="outline" class="text-[10px]">Completed</Badge>
+									<Badge v-if="isUserQuest(q) && q.completed" variant="outline" class="text-[10px]">Completed</Badge>
 									<div v-else class="flex items-center gap-1">
 										<Button size="sm" variant="secondary" class="text-[11px] h-6" @click="incrementProgress(q.id)">+1</Button>
 										<AlertDialog>
@@ -195,7 +197,7 @@ function tabClass(tab: typeof activeTab.value) {
 				</div>
 
 				<!-- Featured Quest -->
-				<div class="order-2 space-y-4" v-if="featuredQuest">
+				<div v-if="featuredQuest" class="order-2 space-y-4">
 					<Card class="p-0 overflow-hidden flex flex-col border">
 						<div class="flex items-center justify-between px-4 pt-4">
 							<div class="flex items-center gap-1 text-xs font-medium text-yellow-600">
@@ -205,7 +207,7 @@ function tabClass(tab: typeof activeTab.value) {
 						</div>
 						<div class="mt-2 aspect-video w-full bg-muted flex items-center justify-center overflow-hidden">
 							<!-- Placeholder image -->
-							<img src="/placeholder.svg" alt="Featured quest" class="object-cover w-full h-full" />
+							<img src="/placeholder.svg" alt="Featured quest" class="object-cover w-full h-full" >
 						</div>
 						<div class="p-4 flex flex-col gap-3">
 							<div class="flex items-center gap-2">
@@ -214,7 +216,7 @@ function tabClass(tab: typeof activeTab.value) {
 							</div>
 							<h3 class="text-sm font-semibold leading-tight">{{ featuredQuest?.data?.name }}</h3>
 							<p class="text-xs text-muted-foreground leading-snug">{{ featuredQuest?.data?.description }}</p>
-							<Button size="sm" class="mt-1" :disabled="!canStartMore" @click="startQuest(featuredQuest?.data)" v-if="featuredQuest?.type==='discover' && featuredQuest?.data" :title="canStartMore ? 'Start quest' : `Limit reached: ${MAX_ACTIVE} active quests`">Start Quest</Button>
+							<Button v-if="featuredQuest?.type==='discover' && featuredQuest?.data" size="sm" class="mt-1" :disabled="!canStartMore" :title="canStartMore ? 'Start quest' : `Limit reached: ${MAX_ACTIVE} active quests`" @click="startQuest(featuredQuest?.data)">Start Quest</Button>
 							<Badge v-else variant="outline" class="w-fit text-[10px]">In Progress</Badge>
 						</div>
 					</Card>

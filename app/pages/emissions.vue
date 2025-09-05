@@ -1,32 +1,58 @@
+<!--
+/**
+ * Emissions Tracking Page - Comprehensive Carbon Footprint Analysis
+ * 
+ * This page provides users with detailed insights into their carbon emissions across
+ * different categories (transport, food, energy, waste). Features include:
+ * 
+ * - Interactive charts showing emissions by category and time
+ * - Detailed activity history with filtering capabilities
+ * - Monthly and yearly trend analysis
+ * - Comparison against personal baselines and targets
+ * - Export functionality for data analysis
+ * 
+ * The page uses Chart.js for visualizations and provides both summary
+ * and granular views of environmental impact data.
+ * 
+ * @page Emissions
+ */
+-->
+
 <script setup lang="ts">
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+
+// UI Components
+import Card from '~/components/ui/card/Card.vue'
+import Button from '~/components/ui/button/Button.vue'
+import Badge from '~/components/ui/badge/Badge.vue'
+import Separator from '~/components/ui/separator/Separator.vue'
+// Enhanced UI Components (available for future use)
+// import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
+// import ErrorState from '@/components/ui/ErrorState.vue'
+
+// Chart.js type imports for TypeScript support
+import type { Chart as ChartType, TooltipItem } from 'chart.js'
+
+// Page metadata configuration
 definePageMeta({
   layout: "app-shell",
   tagline: "Track and understand your carbon footprint.",
 })
 
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
-
-import Card from '~/components/ui/card/Card.vue'
-import Button from '~/components/ui/button/Button.vue'
-import Badge from '~/components/ui/badge/Badge.vue'
-import Separator from '~/components/ui/separator/Separator.vue'
-
-// Breadcrumb components
-import Breadcrumb from '~/components/ui/breadcrumb/Breadcrumb.vue'
-import BreadcrumbItem from '~/components/ui/breadcrumb/BreadcrumbItem.vue'
-import BreadcrumbList from '~/components/ui/breadcrumb/BreadcrumbList.vue'
-import BreadcrumbPage from '~/components/ui/breadcrumb/BreadcrumbPage.vue'
-
-// Charts commented out
+// Chart components are commented out - uncomment when backend is available
 // import ChartBar from '~/components/ui/chart-bar/ChartBar.vue'
 // import ChartDonut from '~/components/ui/chart-donut/ChartDonut.vue'
 
+/**
+ * Interface for historical emissions data
+ * Represents individual emission activities with their impact
+ */
 type HistoryItem = {
   id: number
-  activity: string
-  category: string
-  date: string
-  impactKg: number
+  activity: string // Description of the activity (e.g., "Car journey", "Beef consumption")
+  category: string // Category type (transport, food, energy, waste)
+  date: string // ISO date string
+  impactKg: number // CO2 equivalent in kilograms
   type: 'debit' | 'credit'
 }
 
@@ -128,9 +154,7 @@ const categoryBreakdown = computed(() => {
 // ---- Chart.js Integration ----
 const barCanvas = ref<HTMLCanvasElement | null>(null)
 const donutCanvas = ref<HTMLCanvasElement | null>(null)
-
-import type { Chart as ChartType } from 'chart.js'
-let ChartLib: any // will hold the Chart constructor after dynamic import
+let ChartLib: typeof ChartType | null = null // will hold the Chart constructor after dynamic import
 let barChart: ChartType | null = null
 let donutChart: ChartType | null = null
 
@@ -179,7 +203,7 @@ function buildBarChart() {
       },
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: (ctx: any) => `${ctx.parsed.y} kg` } }
+        tooltip: { callbacks: { label: (ctx: TooltipItem<'bar'>) => `${ctx.parsed.y} kg` } }
       }
     }
   })
@@ -209,7 +233,7 @@ function buildDonutChart() {
       cutout: '60%',
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: (ctx: any) => `${ctx.label}: ${ctx.parsed} %` } }
+        tooltip: { callbacks: { label: (ctx: TooltipItem<'doughnut'>) => `${ctx.label}: ${ctx.parsed} %` } }
       }
     }
   })
@@ -278,7 +302,7 @@ function getCssVar(name: string, fallback: string) {
             <Button size="sm" variant="ghost" class="h-7 text-xs">View Detail</Button>
           </div>
           <div class="flex-1 h-[260px] relative">
-            <canvas ref="barCanvas" aria-label="Monthly emissions bar chart" role="img"></canvas>
+            <canvas ref="barCanvas" aria-label="Monthly emissions bar chart" role="img"/>
           </div>
         </Card>
 
@@ -287,12 +311,12 @@ function getCssVar(name: string, fallback: string) {
           <h2 class="text-sm font-medium text-muted-foreground uppercase mb-4">Emissions Breakdown</h2>
           <div class="flex items-center gap-4">
             <div class="w-40 h-40 relative">
-              <canvas ref="donutCanvas" aria-label="Category emissions breakdown" role="img"></canvas>
+              <canvas ref="donutCanvas" aria-label="Category emissions breakdown" role="img"/>
             </div>
             <ul class="flex-1 space-y-1 text-xs">
               <li v-for="c in categoryBreakdown" :key="c.label" class="flex items-center justify-between">
                 <span class="flex items-center gap-2">
-                  <span class="h-2 w-2 rounded-full" :style="{ background: c.color }"></span>{{ c.label }}
+                  <span class="h-2 w-2 rounded-full" :style="{ background: c.color }"/>{{ c.label }}
                 </span>
                 <span class="font-medium">{{ c.value }}%</span>
               </li>

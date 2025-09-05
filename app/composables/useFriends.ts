@@ -9,6 +9,46 @@ export interface FriendProfile {
     status?: "accepted" | "pending" | "incoming";
 }
 
+interface FriendshipDbRow {
+    requester_id: string;
+    recipient_id: string;
+    status: string;
+    created_at: string;
+    requester?: {
+        id: string;
+        display_name: string | null;
+        avatar_url: string | null;
+        total_points: number | null;
+        state: string | null;
+    } | null;
+    recipient?: {
+        id: string;
+        display_name: string | null;
+        avatar_url: string | null;
+        total_points: number | null;
+        state: string | null;
+    } | null;
+}
+
+interface LegacyFriendshipRow {
+    friend_id: string;
+    created_at: string;
+    profiles?: {
+        display_name: string | null;
+        avatar_url: string | null;
+        total_points: number | null;
+        state: string | null;
+    } | null;
+}
+
+interface ProfileSearchResult {
+    id: string;
+    display_name: string | null;
+    avatar_url: string | null;
+    total_points: number | null;
+    state: string | null;
+}
+
 export function useFriends() {
     const supabase = useSupabaseClient();
     const user = useSupabaseUser();
@@ -38,10 +78,10 @@ export function useFriends() {
                 .eq("status", "accepted");
             if (accErr) throw accErr;
             const me = user.value.id;
-            friends.value = (accepted || []).map((r: any) => {
+            friends.value = (accepted || []).map((r: FriendshipDbRow) => {
                 const other = r.requester_id === me ? r.recipient : r.requester;
                 return {
-                    id: other?.id,
+                    id: other?.id || '',
                     display_name: other?.display_name || "Anon",
                     avatar_url: other?.avatar_url || null,
                     total_points: other?.total_points ?? 0,
@@ -60,8 +100,8 @@ export function useFriends() {
                 .eq("recipient_id", me)
                 .eq("status", "pending");
             if (incErr) throw incErr;
-            incoming.value = (inc || []).map((r: any) => ({
-                id: r.requester?.id,
+            incoming.value = (inc || []).map((r: FriendshipDbRow) => ({
+                id: r.requester?.id || '',
                 display_name: r.requester?.display_name || "Anon",
                 avatar_url: r.requester?.avatar_url || null,
                 total_points: r.requester?.total_points ?? 0,
@@ -69,7 +109,7 @@ export function useFriends() {
                 created_at: r.created_at,
                 you: false,
                 status: "incoming",
-            }));
+            } as FriendProfile));
             // outgoing pending
             const { data: out, error: outErr } = await supabase
                 .from("friend_requests")
@@ -101,9 +141,10 @@ export function useFriends() {
                     status: "pending",
                 })
             );
-        } catch (e: any) {
+        } catch (e: unknown) {
             // If friend_requests table doesn't exist yet, gracefully fallback to old friendships table so UI still works
-            if (e?.code === "42P01") {
+            const error = e as { code?: string };
+            if (error?.code === "42P01") {
                 // undefined_table
                 try {
                     const { data: fr, error: frErr } = await supabase
@@ -114,7 +155,7 @@ export function useFriends() {
                         .eq("user_id", user.value!.id)
                         .order("created_at", { ascending: false });
                     if (frErr) throw frErr;
-                    friends.value = (fr || []).map((r: any) => ({
+                    friends.value = (fr || []).map((r: LegacyFriendshipRow) => ({
                         id: r.friend_id,
                         display_name: r.profiles?.display_name || "Anon",
                         avatar_url: r.profiles?.avatar_url || null,
@@ -229,8 +270,8 @@ export function useFriends() {
             if (sErr) throw sErr;
             const existingIds = new Set(friends.value.map((f) => f.id));
             searchResults.value = (data || [])
-                .filter((p: any) => p.id !== user.value?.id) // exclude self
-                .map((p: any) => ({
+                .filter((p: ProfileSearchResult) => p.id !== user.value?.id) // exclude self
+                .map((p: ProfileSearchResult) => ({
                     id: p.id,
                     display_name: p.display_name || "Anon",
                     avatar_url: p.avatar_url,
@@ -243,8 +284,9 @@ export function useFriends() {
                         incoming.value.some((r) => r.id === p.id) ||
                         outgoing.value.some((r) => r.id === p.id),
                 }));
-        } catch (e: any) {
-            searchError.value = e.message || "Search failed";
+        } catch (e: unknown) {
+            const error = e instanceof Error ? e.message : "Search failed";
+            searchError.value = error;
         } finally {
             searching.value = false;
         }

@@ -1,14 +1,38 @@
-<script setup lang="ts">
-// Page meta for SEO and layout
-definePageMeta({
-  layout: "app-shell",
-  tagline: "Tips & Tricks to help you help the planet.",
-})
+<!--
+/**
+ * Sustainability Tips and Educational Content Page
+ * 
+ * A comprehensive resource hub providing users with practical sustainability tips,
+ * educational articles, and actionable advice for reducing their environmental impact.
+ * Content is organized by category and includes expert advice, community contributions,
+ * and evidence-based recommendations.
+ * 
+ * Features:
+ * - Categorized sustainability articles and tips
+ * - Author attribution and expert credentials
+ * - Search and filtering capabilities
+ * - Bookmark functionality for favorite tips
+ * - Community rating and feedback system
+ * - Integration with quest system for actionable challenges
+ * 
+ * Content covers:
+ * - Energy efficiency and renewable energy
+ * - Sustainable transportation options
+ * - Waste reduction and circular economy
+ * - Sustainable food choices and local sourcing
+ * - Water conservation techniques
+ * - Green home and lifestyle practices
+ * 
+ * @page Tips
+ */
+-->
 
+<script setup lang="ts">
+// Page meta for SEO and layout configuration
 import { ref, computed } from 'vue'
 import { marked } from 'marked'
 
-// UI Components
+// UI Components for consistent design
 import Card from '~/components/ui/card/Card.vue'
 import Button from '~/components/ui/button/Button.vue'
 import Badge from '~/components/ui/badge/Badge.vue'
@@ -16,16 +40,34 @@ import Avatar from '~/components/ui/avatar/Avatar.vue'
 import AvatarImage from '~/components/ui/avatar/AvatarImage.vue'
 import AvatarFallback from '~/components/ui/avatar/AvatarFallback.vue'
 import Separator from '~/components/ui/separator/Separator.vue'
+// Enhanced UI Components (available for future use)
+// import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
+// import ErrorState from '@/components/ui/ErrorState.vue'
 
+// Page metadata for navigation and SEO
+definePageMeta({
+  layout: "app-shell",
+  tagline: "Tips & Tricks to help you help the planet.",
+})
+
+/**
+ * Article interface defining the structure of sustainability content
+ * Supports both markdown content and pre-rendered HTML
+ */
 interface Article {
   id: number
   title: string
-  category: string
-  excerpt: string
-  author: { name: string; avatar?: string }
-  slug: string
-  raw: string
-  html: string
+  category: string // e.g., 'energy', 'transport', 'food', 'waste'
+  excerpt: string // Short description for previews
+  author: { name: string; avatar?: string; credentials?: string }
+  slug: string // URL-friendly identifier
+  raw: string // Original markdown content
+  html: string // Rendered HTML content
+  publishedAt?: string // Publication date
+  readingTime?: number // Estimated reading time in minutes
+  tags?: string[] // Additional categorization tags
+  difficulty?: 'beginner' | 'intermediate' | 'advanced' // Implementation difficulty
+  impact?: 'low' | 'medium' | 'high' // Potential environmental impact
 }
 
 const categories = [
@@ -180,7 +222,7 @@ async function copyLink(id: number) {
                 <p class="text-sm text-muted-foreground line-clamp-2">{{ a.excerpt }}</p>
                 <transition name="fade">
                   <div v-if="expandedArticleId === a.id" class="mt-3 text-sm text-foreground">
-                    <div v-if="a.html" class="prose max-w-none prose-table:table-auto prose-td:border prose-th:border prose-td:px-2 prose-th:px-2 prose-td:py-1 prose-th:py-1" v-html="a.html"></div>
+                    <div v-if="a.html" class="prose max-w-none prose-table:table-auto prose-td:border prose-th:border prose-td:px-2 prose-th:px-2 prose-td:py-1 prose-th:py-1" v-html="a.html"/>
                     <p v-else class="text-muted-foreground">No additional content available.</p>
 
                     <div class="flex items-center justify-between mt-3">
@@ -194,14 +236,14 @@ async function copyLink(id: number) {
 
                       <div class="flex items-center gap-2">
                         <button
-                          @click.stop="copyLink(a.id)"
                           class="text-xs px-2 py-1 rounded hover:bg-muted/30"
+                          @click.stop="copyLink(a.id)"
                         >
                           Copy link
                         </button>
                         <button
-                          @click.stop="toggleExpand(a.id)"
                           class="text-xs px-2 py-1 rounded hover:bg-muted/30"
+                          @click.stop="toggleExpand(a.id)"
                         >
                           Close
                         </button>
@@ -243,7 +285,7 @@ async function copyLink(id: number) {
 
         <Card class="overflow-hidden">
           <div class="aspect-[16/7] w-full bg-muted">
-            <img v-if="tipOfDay.image" :src="tipOfDay.image" alt="" class="h-full w-full object-cover" />
+            <img v-if="tipOfDay.image" :src="tipOfDay.image" alt="" class="h-full w-full object-cover" >
           </div>
           <div class="p-4 space-y-2">
             <div class="flex items-center gap-2 text-sm">

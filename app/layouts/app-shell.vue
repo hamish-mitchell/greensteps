@@ -1,6 +1,32 @@
+<!--
+/**
+ * App Shell Layout - Main Application Container
+ * 
+ * The primary layout component that provides the overall structure for the GreenSteps
+ * application. This layout includes the sidebar navigation, breadcrumb system,
+ * and main content area. It serves as the wrapper for all authenticated pages.
+ * 
+ * Key Features:
+ * - Responsive sidebar navigation with collapsible design
+ * - Dynamic breadcrumb generation based on current route
+ * - Lazy-loaded sidebar for performance optimization
+ * - Consistent header structure across all pages
+ * - Mobile-friendly adaptive layout
+ * - Integration with the design system components
+ * 
+ * Layout Structure:
+ * - SidebarProvider: Manages sidebar state and responsive behavior
+ * - AppSidebar: Main navigation component with menu items
+ * - SidebarInset: Content area with breadcrumbs and page content
+ * - Breadcrumb system: Automatic navigation trail generation
+ * 
+ * @layout AppShell
+ */
+-->
+
 <script setup lang="ts">
-// Lazy import sidebar to reduce synchronous work on navigation.
-const AppSidebar = defineAsyncComponent(() => import('@/components/AppSidebar.vue'));
+// Lazy import sidebar to reduce synchronous work on navigation
+// This improves initial page load performance
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -18,7 +44,13 @@ import {
 
 import { capitalise } from "@/utils/capitalise";
 
-// Get the current route for breadcrumb display
+/**
+ * Lazy-loaded sidebar component for performance optimization
+ * Defers loading of navigation until after initial page render
+ */
+const AppSidebar = defineAsyncComponent(() => import('@/components/AppSidebar.vue'));
+
+// Get the current route for dynamic breadcrumb generation
 const route = useRoute();
 </script>
 

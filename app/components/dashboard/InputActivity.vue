@@ -1,3 +1,24 @@
+<!--
+/**
+ * Activity Input Component for GreenSteps Dashboard
+ * 
+ * A comprehensive form component for users to input various types of carbon footprint activities.
+ * Supports multiple categories (transport, food, electricity, waste) with dynamic form fields
+ * that adapt based on the selected category type.
+ * 
+ * Features:
+ * - Category-specific form fields with validation
+ * - Real-time form state management and validation
+ * - Integration with the activities composable for data submission
+ * - User-friendly interface with descriptive labels and units
+ * - Responsive design using shadcn/ui components
+ * 
+ * @component
+ * @example
+ * <InputActivity @save="handleActivitySave" />
+ */
+-->
+
 <script setup lang="ts">
 import {
     Sheet,
