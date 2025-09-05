@@ -1,6 +1,9 @@
-/*
- * Global middleware: if Supabase sends user to wrong path (e.g. / or /login) with ?code=<token>&type=recovery
- * normalize by redirecting to /reset-password preserving query so the reset page can exchange the code.
+/**
+ * Recovery Redirect Middleware - Authentication Flow Handler
+ * 
+ * Global middleware that normalizes Supabase recovery URLs.
+ * Redirects users to /reset-password when recovery tokens are present
+ * regardless of which path Supabase initially sent them to.
  */
 export default defineNuxtRouteMiddleware((to) => {
   // Already on correct page

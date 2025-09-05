@@ -1,3 +1,9 @@
+/**
+ * Canvas Confetti Type Declarations - Animation Library Types
+ * 
+ * TypeScript type definitions for the canvas-confetti library.
+ * Used for celebration animations and visual feedback throughout the app.
+ */
 declare module 'canvas-confetti' {
   interface Options {
     particleCount?: number;

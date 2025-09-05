@@ -1,3 +1,9 @@
+/**
+ * Streak API Endpoint - User Activity Streaks
+ * 
+ * Server endpoint that retrieves the user's current activity streak.
+ * Requires authentication and fetches streak data from user profiles.
+ */
 import { createClient } from "@supabase/supabase-js";
 import { setResponseStatus, getHeader } from "h3";
 

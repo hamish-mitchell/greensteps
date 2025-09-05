@@ -1,3 +1,9 @@
+<!--
+  Activity Input Component - Carbon Activity Tracker
+  
+  Modal form component for inputting user activities and tracking carbon emissions.
+  Supports multiple activity types: transport, energy, waste, and food consumption.
+-->
 <script setup lang="ts">
 import {
     Sheet,
