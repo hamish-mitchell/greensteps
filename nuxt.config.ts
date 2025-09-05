@@ -10,7 +10,8 @@ export default defineNuxtConfig({
         plugins: [tailwindcss()], // Tailwind via Vite plugin
     },
 
-    modules: ["@nuxt/eslint", "@nuxtjs/supabase", "shadcn-nuxt", "@nuxt/fonts",], // Supabase + lint integration
+    // Temporarily removed '@nuxt/content' due to startup error; will re-add after fixing tips page implementation
+    modules: ["@nuxt/eslint", "@nuxtjs/supabase", "shadcn-nuxt", "@nuxt/fonts"], // Supabase + lint
 
     supabase: {
         // Uses env vars (avoid hardcoding)
