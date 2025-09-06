@@ -3,6 +3,9 @@
   
   Handles email confirmation after user registration.
   Redirects authenticated users to dashboard upon successful confirmation.
+
+  Author: Thomas Clemow
+  Date: 06/08/2025
 -->
 <script setup lang="ts">
 const user = useSupabaseUser();

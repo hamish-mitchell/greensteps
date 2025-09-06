@@ -4,6 +4,9 @@
  * Centralized, cached fetch of the user's onboarding completion state.
  * Avoids running a Supabase query on every route navigation.
  * Usage: const { onboardingCompleted, ensureLoaded, markCompleted } = useOnboardingCompleted()
+ * 
+ * Author: Hamish Mitchell
+ * Date: 02/09/2025
  */
 
 export function useOnboardingCompleted() {

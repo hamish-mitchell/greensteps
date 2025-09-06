@@ -3,6 +3,9 @@
   
   User account settings and preferences management.
   Allows users to update profile information and app configuration.
+
+  Author: Thomas Clemow
+  Date: 26/08/2025
 -->
 <template>
   <app-shell>

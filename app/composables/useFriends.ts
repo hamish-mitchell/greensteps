@@ -3,6 +3,9 @@
  * 
  * Manages friend relationships, invitations, and social interactions.
  * Handles friend requests, acceptance/rejection, and friend data display.
+ * 
+ * Author: Hamish Mitchell
+ * Date: 14/08/2025
  */
 export interface FriendProfile {
     id: string;

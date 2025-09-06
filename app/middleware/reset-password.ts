@@ -3,6 +3,9 @@
  * 
  * Redirects authenticated users away from /reset-password unless they have
  * valid recovery context (recovery tokens). Prevents access conflicts.
+ * 
+ * Author: Hamish Mitchell
+ * Date: 03/09/2025
  */
 export default defineNuxtRouteMiddleware((to) => {
   const user = useSupabaseUser();

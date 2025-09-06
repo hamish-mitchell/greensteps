@@ -3,6 +3,9 @@
   
   Displays available challenges and quests for users to complete.
   Tracks progress, rewards, and provides motivation for sustainable actions.
+
+  Author: Hamish Mitchell
+  Date: 13/08/2025
 -->
 <script setup lang="ts">
 definePageMeta({
@@ -211,7 +214,7 @@ function tabClass(tab: typeof activeTab.value) {
 						</div>
 						<div class="mt-2 aspect-video w-full bg-muted flex items-center justify-center overflow-hidden">
 							<!-- Placeholder image -->
-							<img src="/placeholder.svg" alt="Featured quest" class="object-cover w-full h-full" />
+							<img src="/image.png" alt="Featured quest" class="object-cover w-full h-full" />
 						</div>
 						<div class="p-4 flex flex-col gap-3">
 							<div class="flex items-center gap-2">

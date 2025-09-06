@@ -241,7 +241,7 @@ async function handleUpdatePassword() {
     <!-- Right column (image) -->
     <div class="relative hidden bg-muted lg:block">
       <img
-        src="/placeholder.svg"
+        src="/image.png"
         alt="Image"
         class="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
       >

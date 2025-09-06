@@ -3,6 +3,9 @@
   
   Displays curated environmental tips and educational articles.
   Features filtering by category and markdown content rendering.
+
+  Author: Thomas Clemow
+  Date: 13/08/2025
 -->
 <script setup lang="ts">
 // Page meta for SEO and layout

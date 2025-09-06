@@ -3,6 +3,9 @@
  * 
  * Manages user activity submission, validation, and emission calculations.
  * Handles form data processing and Supabase database interactions.
+ * 
+ * Author: Hamish Mitchell
+ * Date: 06/08/2025
  */
 type RawFormPayload = {
   category: string;

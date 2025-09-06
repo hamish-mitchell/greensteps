@@ -3,6 +3,9 @@
   
   Guides new users through initial profile setup and configuration.
   Collects user preferences and baseline data for carbon tracking.
+
+  Author: Hamish Mitchell
+  Date: 20/08/2025
 -->
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue';

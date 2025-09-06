@@ -3,6 +3,9 @@
  * 
  * Redirects authenticated users to onboarding page until they complete
  * the initial setup process. Allows access to auth-related routes.
+ * 
+ * Author: Hamish Mitchell
+ * Date: 18/08/2025
  */
 export default defineNuxtRouteMiddleware(async (to) => {
   const supabaseUser = useSupabaseUser();

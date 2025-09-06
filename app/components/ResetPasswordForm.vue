@@ -1,3 +1,9 @@
+<!--
+  Reset Password Component - User Authentication
+
+  Form with input for email, allows the user to reset their password.
+-->
+
 <template>
   <Card class="mx-auto max-w-sm border-none shadow-none">
     <CardHeader>

@@ -3,6 +3,9 @@
  * 
  * Manages user quests, challenges, and progress tracking.
  * Handles quest completion, rewards, and progress updates.
+ * 
+ * Author: Hamish Mitchell
+ * Date: 18/08/2025
  */
 import { useEventBus } from "@vueuse/core";
 

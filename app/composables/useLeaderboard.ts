@@ -3,6 +3,9 @@
  * 
  * Manages leaderboard data fetching and display functionality.
  * Handles user rankings, points, and friend comparisons.
+ * 
+ * Author: Hamish Mitchell
+ * Date: 11/08/2025
  */
 export interface LeaderboardEntry {
   id: string

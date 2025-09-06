@@ -4,6 +4,9 @@
  * Global middleware that normalizes Supabase recovery URLs.
  * Redirects users to /reset-password when recovery tokens are present
  * regardless of which path Supabase initially sent them to.
+ * 
+ * Author: Hamish Mitchell
+ * Date: 18/08/2025
  */
 export default defineNuxtRouteMiddleware((to) => {
   // Already on correct page

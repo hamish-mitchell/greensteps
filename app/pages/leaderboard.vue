@@ -3,6 +3,9 @@
   
   Displays user rankings and competitive scoring.
   Shows global and friend leaderboards with user positions and points.
+
+  Author: Thomas Clemow
+  Date: 06/08/2025
 -->
 <script setup lang="ts">
 definePageMeta({

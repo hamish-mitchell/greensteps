@@ -3,6 +3,9 @@
   
   Displays user's emission history with filtering options,
   charts visualization, and detailed activity breakdown.
+
+  Author: Thomas Clemow
+  Date: 06/08/2025
 -->
 <script setup lang="ts">
 definePageMeta({

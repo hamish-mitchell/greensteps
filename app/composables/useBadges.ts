@@ -3,6 +3,9 @@
  * 
  * Manages user badge/achievement data retrieval and display.
  * Integrates with Supabase to fetch earned badges and progress.
+ * 
+ * Author: Hamish Mitchell
+ * Date: 13/08/2025
  */
 export interface UserBadge {
   badge_id: number;

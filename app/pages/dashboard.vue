@@ -3,6 +3,9 @@
   
   Primary dashboard displaying user's carbon footprint metrics, 
   activity tracking, recent achievements, and quick action buttons.
+
+  Author: Thomas Clemow
+  Date: 06/08/2025
 -->
 <script setup lang="ts">
 import { Plus } from 'lucide-vue-next';

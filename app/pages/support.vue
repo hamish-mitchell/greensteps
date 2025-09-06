@@ -3,6 +3,9 @@
   
   Provides user support interface with contact form and help resources.
   Allows users to submit feedback and get assistance with the application.
+
+  Author: Thomas Clemow
+  Date: 02/08/2025
 -->
 <script setup lang="ts">
 definePageMeta({
@@ -16,7 +19,7 @@ import Textarea from '~/components/ui/textarea/Textarea.vue'
 import Input from '~/components/ui/input/Input.vue'
 
 const config = useRuntimeConfig()
-const supportEmail = (config.public as any)?.SUPPORT_EMAIL || 'support@example.com'
+const supportEmail = (config.public as any)?.SUPPORT_EMAIL || 'support@greensteps.app'
 
 const name = ref('')
 const email = ref('')

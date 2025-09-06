@@ -3,6 +3,9 @@
   
   Primary layout component that provides the sidebar navigation,
   breadcrumb navigation, and content container for authenticated pages.
+  
+  Author: Thomas Clemow
+  Date: 12/08/2025
 -->
 <script setup lang="ts">
 // Lazy import sidebar to reduce synchronous work on navigation.

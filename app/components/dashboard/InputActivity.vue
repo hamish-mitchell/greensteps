@@ -3,6 +3,9 @@
   
   Modal form component for inputting user activities and tracking carbon emissions.
   Supports multiple activity types: transport, energy, waste, and food consumption.
+
+  Author: Hamish Mitchell
+  Date: 06/08/2025
 -->
 <script setup lang="ts">
 import {

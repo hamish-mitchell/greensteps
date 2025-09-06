@@ -3,6 +3,9 @@
   
   Provides user authentication interface with sign-in, sign-up,
   and password reset functionality. Handles form switching and validation.
+
+  Author: Hamish
+  Date: 13/08/2025
 -->
 <script setup lang="ts">
 // Component imports
@@ -160,7 +163,7 @@ async function handleReset() {
         </div>
         <div class="relative hidden bg-muted lg:block">
             <img
-                src="/placeholder.svg"
+                src="/image.png"
                 alt="Image"
                 class="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
             >

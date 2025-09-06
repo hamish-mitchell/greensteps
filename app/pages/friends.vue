@@ -3,6 +3,9 @@
   
   Manages user's social connections, friend requests, and friend activity.
   Provides interface for adding friends and viewing friend profiles.
+
+  Author: Hamish Mitchell
+  Date: 26/08/2025
 -->
 <script setup lang="ts">
 import { ref } from "vue";

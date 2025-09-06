@@ -3,6 +3,9 @@
   
   Main app component that renders the Nuxt layout and page system.
   Includes global toast notifications via vue-sonner.
+
+  Author: Hamish Mitchell
+  Date: 04/08/2025
 -->
 <script setup lang="ts">
 // Toaster component for notifications
