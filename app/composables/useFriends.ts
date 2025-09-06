@@ -1,3 +1,9 @@
+/**
+ * Friends Composable - Social Features
+ * 
+ * Manages friend relationships, invitations, and social interactions.
+ * Handles friend requests, acceptance/rejection, and friend data display.
+ */
 export interface FriendProfile {
     id: string;
     display_name: string | null;

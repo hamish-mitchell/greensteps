@@ -1,3 +1,9 @@
+/**
+ * Badges Composable - Achievement System
+ * 
+ * Manages user badge/achievement data retrieval and display.
+ * Integrates with Supabase to fetch earned badges and progress.
+ */
 export interface UserBadge {
   badge_id: number;
   awarded_at: string;

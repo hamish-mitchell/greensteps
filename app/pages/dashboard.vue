@@ -1,3 +1,9 @@
+<!--
+  Dashboard Page - Main User Dashboard
+  
+  Primary dashboard displaying user's carbon footprint metrics, 
+  activity tracking, recent achievements, and quick action buttons.
+-->
 <script setup lang="ts">
 import { Plus } from 'lucide-vue-next';
 import { ref, computed, watch } from 'vue';

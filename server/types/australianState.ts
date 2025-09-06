@@ -1,3 +1,9 @@
+/**
+ * Australian State Types - Geographic Data
+ * 
+ * Type definitions for Australian states and territories.
+ * Used for location-based emission calculations and regional data.
+ */
 export type AustralianState =
     | "au-act"
     | "au-nsw"

@@ -1,3 +1,9 @@
+<!--
+  App Sidebar Component - Navigation Menu
+  
+  Main navigation sidebar with user profile, menu items, and app branding.
+  Handles authentication state and provides access to all major features.
+-->
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useSupabaseUser, useSupabaseClient } from '#imports' // or from '@nuxtjs/supabase' if not auto-imported

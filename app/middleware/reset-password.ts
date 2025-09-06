@@ -1,6 +1,8 @@
-/*
- * Redirect already authenticated users away from /reset-password unless they have a valid recovery context.
- * Recovery context = presence of ?code=... or #access_token=... or #type=recovery
+/**
+ * Reset Password Middleware - Authentication Protection
+ * 
+ * Redirects authenticated users away from /reset-password unless they have
+ * valid recovery context (recovery tokens). Prevents access conflicts.
  */
 export default defineNuxtRouteMiddleware((to) => {
   const user = useSupabaseUser();

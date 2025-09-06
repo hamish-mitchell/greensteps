@@ -1,3 +1,9 @@
+/**
+ * Activities Composable - Carbon Activity Tracking
+ * 
+ * Manages user activity submission, validation, and emission calculations.
+ * Handles form data processing and Supabase database interactions.
+ */
 type RawFormPayload = {
   category: string;
   food: null | { subcategory: string; amountKg: number | null };

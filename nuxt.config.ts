@@ -1,3 +1,9 @@
+/**
+ * Nuxt Configuration - Greensteps Carbon Tracking App
+ * 
+ * Main configuration file for the Nuxt 4 application with SSR/SPA hybrid mode.
+ * Configures Supabase authentication, Tailwind CSS, shadcn/ui components, and fonts.
+ */
 import tailwindcss from "@tailwindcss/vite";
 
 // Nuxt configuration (hybrid SSR / SPA)
@@ -10,7 +16,8 @@ export default defineNuxtConfig({
         plugins: [tailwindcss()], // Tailwind via Vite plugin
     },
 
-    modules: ["@nuxt/eslint", "@nuxtjs/supabase", "shadcn-nuxt", "@nuxt/fonts",], // Supabase + lint integration
+    // Temporarily removed '@nuxt/content' due to startup error; will re-add after fixing tips page implementation
+    modules: ["@nuxt/eslint", "@nuxtjs/supabase", "shadcn-nuxt", "@nuxt/fonts"], // Supabase + lint
 
     supabase: {
         // Uses env vars (avoid hardcoding)

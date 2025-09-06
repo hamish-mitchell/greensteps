@@ -1,3 +1,9 @@
+<!--
+  Root Application Component - Greensteps
+  
+  Main app component that renders the Nuxt layout and page system.
+  Includes global toast notifications via vue-sonner.
+-->
 <script setup lang="ts">
 // Toaster component for notifications
 import { Toaster } from "@/components/ui/sonner";

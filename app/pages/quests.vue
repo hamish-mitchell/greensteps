@@ -1,3 +1,9 @@
+<!--
+  Quests Page - Gamification Challenge System
+  
+  Displays available challenges and quests for users to complete.
+  Tracks progress, rewards, and provides motivation for sustainable actions.
+-->
 <script setup lang="ts">
 definePageMeta({
 	layout: 'app-shell',

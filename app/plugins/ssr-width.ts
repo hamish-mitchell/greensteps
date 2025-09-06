@@ -1,3 +1,9 @@
+/**
+ * SSR Width Plugin - Client-Server Rendering Consistency
+ * 
+ * Provides consistent width values for SSR to prevent hydration mismatches.
+ * Used by shadcn-vue components for responsive behavior.
+ */
 import { provideSSRWidth } from "@vueuse/core";
 
 /*
