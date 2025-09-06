@@ -101,6 +101,8 @@ type ActivityFormPayload = {
     transport: null | { mode: string; durationHours: number; durationMinutes: number; totalMinutes: number };
     electricity: null | { kWh: number | null };
     waste: null | { amountKg: number | null };
+    diet: null | { meals: number | null };
+    recycling: null | { items: number | null };
 };
 async function handleSaveActivity(payload: ActivityFormPayload) {
     const result = await addFromForm(payload);

@@ -33,14 +33,14 @@ import { Button } from "@/components/ui/button";
 import { reactive, computed, watch } from "vue";
 
 // Types
-type Category = 'Food' | 'Transport' | 'Electricity' | 'Waste';
+type Category = 'Food' | 'Transport' | 'Electricity' | 'Waste' | 'Diet' | 'Recycling';
 type FoodSub = 'Red Meat' | 'White Meat' | 'Dairy' | 'Baked Goods' | 'Fruit/Veg.';
-type TransportMode = 'Car' | 'Walk/Ride' | 'Bus' | 'Train' | 'Tram' | 'Plane';
+type TransportMode = 'Car (Petrol)' | 'Car (Electric)' | 'Walk/Ride' | 'Bike' | 'Bus' | 'Train' | 'Tram' | 'Plane';
 
 // Options
-const categories: Category[] = ['Food','Transport','Electricity','Waste'];
+const categories: Category[] = ['Food','Transport','Electricity','Waste','Diet','Recycling'];
 const foodSubs: FoodSub[] = ['Red Meat','White Meat','Dairy','Baked Goods','Fruit/Veg.'];
-const transportModes: TransportMode[] = ['Car','Walk/Ride','Bus','Train','Tram','Plane'];
+const transportModes: TransportMode[] = ['Car (Petrol)','Car (Electric)','Walk/Ride','Bike','Bus','Train','Tram','Plane'];
 
 // Form state
 const form = reactive({
@@ -52,6 +52,8 @@ const form = reactive({
     durationMinutes: 0,
     electricityKWh: null as number | null,
     wasteKg: null as number | null,
+    dietMeals: null as number | null,
+    recyclingItems: null as number | null,
 });
 
 // Reset irrelevant fields when category changes
@@ -63,6 +65,8 @@ watch(() => form.category, () => {
     form.durationMinutes = 0;
     form.electricityKWh = null;
     form.wasteKg = null;
+    form.dietMeals = null;
+    form.recyclingItems = null;
 });
 
 // Computed helpers
@@ -70,6 +74,8 @@ const isFood = computed(() => form.category === 'Food');
 const isTransport = computed(() => form.category === 'Transport');
 const isElectricity = computed(() => form.category === 'Electricity');
 const isWaste = computed(() => form.category === 'Waste');
+const isDiet = computed(() => form.category === 'Diet');
+const isRecycling = computed(() => form.category === 'Recycling');
 
 const canSave = computed(() => {
     if (!form.category) return false;
@@ -77,6 +83,8 @@ const canSave = computed(() => {
     if (isTransport.value) return !!form.transportMode && (form.durationHours > 0 || form.durationMinutes > 0);
     if (isElectricity.value) return !!form.electricityKWh && form.electricityKWh > 0;
     if (isWaste.value) return !!form.wasteKg && form.wasteKg > 0;
+    if (isDiet.value) return !!form.dietMeals && form.dietMeals > 0;
+    if (isRecycling.value) return !!form.recyclingItems && form.recyclingItems > 0;
     return false;
 });
 
@@ -86,6 +94,8 @@ type ActivityPayload = {
     transport: { mode: TransportMode | ''; durationHours: number; durationMinutes: number; totalMinutes: number } | null;
     electricity: { kWh: number | null } | null;
     waste: { amountKg: number | null } | null;
+    diet: { meals: number | null } | null;
+    recycling: { items: number | null } | null;
 };
 
 const emit = defineEmits<{ (e: 'save', payload: ActivityPayload): void }>();
@@ -110,6 +120,12 @@ function onSave() {
             : null,
         waste: isWaste.value
             ? { amountKg: form.wasteKg }
+            : null,
+        diet: isDiet.value
+            ? { meals: form.dietMeals }
+            : null,
+        recycling: isRecycling.value
+            ? { items: form.recyclingItems }
             : null,
         // timestamp: new Date().toISOString()
     };
@@ -265,6 +281,36 @@ function onSave() {
                     />
                 </div>
 
+                <!-- Diet (Meatless Meals) -->
+                <div v-if="isDiet" class="space-y-2">
+                    <Label for="dietMeals" class="text-sm font-medium"
+                        >Meatless Meals (count)</Label
+                    >
+                    <Input
+                        id="dietMeals"
+                        v-model.number="form.dietMeals as number"
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="e.g. 2"
+                    />
+                </div>
+
+                <!-- Recycling (Plastic Items) -->
+                <div v-if="isRecycling" class="space-y-2">
+                    <Label for="recyclingItems" class="text-sm font-medium"
+                        >Recycled Plastic Items (count)</Label
+                    >
+                    <Input
+                        id="recyclingItems"
+                        v-model.number="form.recyclingItems as number"
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="e.g. 5"
+                    />
+                </div>
+
                 <!-- Preview (optional minimal) -->
                 <div
                     v-if="form.category"
@@ -284,6 +330,12 @@ function onSave() {
                     </div>
                     <div v-if="isWaste">
                         <strong>Waste:</strong> {{ form.wasteKg || 0 }} kg
+                    </div>
+                    <div v-if="isDiet">
+                        <strong>Diet:</strong> {{ form.dietMeals || 0 }} meatless meal(s)
+                    </div>
+                    <div v-if="isRecycling">
+                        <strong>Recycling:</strong> {{ form.recyclingItems || 0 }} plastic item(s)
                     </div>
                 </div>
             </div>
